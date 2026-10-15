@@ -1,7 +1,8 @@
 """ایجنت عامل‌محور (آفلاین-first، با ردیابی کامل).
 
 ابزارها: analyze_request · reference_docs · match_skills · run_skill ·
-         build_dossier · web_search (فقط با allow_web صریح) · audit · refine
+         build_dossier · osint (فقط با allow_osint صریح) ·
+         web_search (فقط با allow_web صریح) · audit · refine
 
 خودبهبودی = بازاجرای هدفمند با بازخورد + ثبت diff در runs:
   چه ادعاهایی اضافه/حذف شد، نه ادعای بهبود کیفی بدون معیار.
@@ -13,7 +14,7 @@ from .ledger import claim_dict
 from .normalize_fa import normalize
 from .store import WorkbenchStore
 
-MAX_STEPS = 6
+MAX_STEPS = 8  # تحلیل، مهارت، ارجاع، وب، رصد، پرونده، حسابرسی + یک بهبود
 
 
 def _trace(trace, tool, detail):
@@ -78,8 +79,36 @@ def audit_dossier(dossier: dict) -> list:
     return issues
 
 
+def _extract_targets(text: str) -> list:
+    """استخراج اهداف قابل‌رصد از متن درخواست.
+
+    قرارداد صریح (جلوگیری از مثبت کاذب): دامنه = توکن نقطه‌دار معتبر؛
+    گیت‌هاب = پیشوند gh: (مثل gh:octocat). واژه‌های عادی هدف نیستند.
+    """
+    from .osint import validate_target
+    candidates = []
+    for tok in normalize(text).split():
+        tok = tok.strip(".,;:!?()\"'«»").strip()
+        if tok.startswith("gh:"):
+            name = tok[3:]
+            try:
+                if validate_target(name) == "github" and "." not in name:
+                    candidates.append((name, "github"))
+            except ValueError:
+                continue
+        elif "." in tok and len(tok) >= 4 and len(tok) <= 253:
+            try:
+                if validate_target(tok) == "domain":
+                    candidates.append((tok, "domain"))
+            except ValueError:
+                continue
+    seen = set()
+    return [c for c in candidates if not (c in seen or seen.add(c))]
+
+
 def run_agent(request: str, store: WorkbenchStore = None,
-              allow_web: bool = False, max_steps: int = MAX_STEPS,
+              allow_web: bool = False, allow_osint: bool = False,
+              max_steps: int = MAX_STEPS,
               feedback: str = "", previous: dict = None,
               doc_id: str = None) -> dict:
     """اجرای ایجنت با ردیابی کامل ابزارها."""
@@ -133,7 +162,54 @@ def run_agent(request: str, store: WorkbenchStore = None,
     else:
         _trace(trace, "web_search", {"skipped": "offline-first (allow_web=False)"})
 
+    osint_targets = _extract_targets(text) if allow_osint else []
+    osint_out = []
+    if allow_osint:
+        from .osint import OsintError, collect
+        for tgt, _kind in osint_targets[:2]:
+            try:
+                out = collect(tgt)
+                osint_out.append(out)
+                _trace(trace, "osint",
+                       {"target": tgt,
+                        "findings": sum(len(c.get("findings", [])) for c in out["connectors"])})
+            except OsintError as e:
+                _trace(trace, "osint", {"target": tgt, "error": str(e)})
+        if not osint_targets:
+            _trace(trace, "osint", {"skipped": "no scannable target in request"})
+    else:
+        _trace(trace, "osint", {"skipped": "offline-first (allow_osint=False)"})
+
     dossier = build_dossier(text, doc_id=doc_id, store_refs=refs)
+    if osint_out:
+        from .ledger import ledger_entry
+        ingested = []
+        for out in osint_out:
+            for c in out["connectors"]:
+                for f in c.get("findings", [])[:8]:
+                    src = ledger_entry(source=f["source_id"],
+                                       quote=f.get("quote", "")[:300],
+                                       url=f.get("url", ""), confidence=0.7)
+                    cl = claim_dict(
+                        statement=f"یافته OSINT ({c['connector']}): {f.get('quote', '')[:120]}",
+                        certainty="I", claim_type="assessment", sources=(src,),
+                        confidence_method="osint-connector-v1")
+                    cl["id"] = f"o{len(dossier['claims']) + 1:02d}"
+                    dossier["claims"].append(cl)
+            body = "\n".join(
+                f"[{c['connector']}] {f['source_id']}: {f.get('quote', '')}"
+                for c in out["connectors"] for f in c.get("findings", []))[:4000]
+            if body.strip():
+                did = store.add_document(
+                    title=f"OSINT: {out['target']}", text=body,
+                    summary=f"یافته‌های رصد {out['target']}",
+                    concepts=[k["term"] for k in extract_keywords(text)[:5]],
+                    source="osint-agent")
+                ingested.append(did)
+        if ingested:
+            dossier["limitations"].append(
+                "یافته‌های OSINT خام‌اند و نیازمند راستی‌آزمایی مستقل‌اند.")
+            _trace(trace, "ingest_osint", {"doc_ids": ingested})
     if web and web.get("results"):
         from .ledger import ledger_entry
         for r in web["results"][:5]:
@@ -166,7 +242,8 @@ def run_agent(request: str, store: WorkbenchStore = None,
         issues = audit_dossier(dossier)
 
     run_id = store.log_run("agent",
-                           {"request": text, "allow_web": allow_web, "feedback": feedback},
+                           {"request": text, "allow_web": allow_web,
+                            "allow_osint": allow_osint, "feedback": feedback},
                            {"claims": len(dossier["claims"]), "issues": issues,
                             "refined": refined, "steps": len(trace)})
     return {"dossier": dossier, "trace": trace, "issues": issues,

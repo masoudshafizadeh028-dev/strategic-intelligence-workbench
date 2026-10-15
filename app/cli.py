@@ -152,7 +152,8 @@ def cmd_agent(args) -> int:
     from engine.agent import run_agent
     try:
         out = run_agent(args.request, store=_store(),
-                        allow_web=args.web, max_steps=args.max_steps)
+                        allow_web=args.web, allow_osint=args.osint,
+                        max_steps=args.max_steps)
     except ValueError as e:
         print(f"خطا: {e}", file=sys.stderr)
         return 2
@@ -289,7 +290,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("request")
     p.add_argument("--web", action="store_true",
                    help="فعال‌سازی جست‌وجوی وب (opt-in، هزینه‌بر)")
-    p.add_argument("--max-steps", type=int, default=6)
+    p.add_argument("--osint", action="store_true",
+                   help="فعال‌سازی رصد OSINT اهداف داخل درخواست (opt-in)")
+    p.add_argument("--max-steps", type=int, default=8)
     p.add_argument("--format", choices=("json", "markdown"), default="json")
     p.set_defaults(func=cmd_agent)
 

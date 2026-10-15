@@ -174,4 +174,55 @@ def test_api_agent_offline_by_default(api_base):
     assert code == 200
     ws_step = next(t for t in out["trace"] if t["tool"] == "web_search")
     assert "skipped" in ws_step["detail"]
+    os_step = next(t for t in out["trace"] if t["tool"] == "osint")
+    assert "skipped" in os_step["detail"]
     assert _call(api_base, "POST", "/api/v1/agent", {})[0] == 400
+
+
+def test_agent_osint_opt_in_with_mock(store, monkeypatch):
+    import engine.agent as ag
+    import engine.osint as o
+
+    def fake_collect(target, connectors=("dns",)):
+        assert target == "example.com"
+        return {"target": target, "kind": "domain", "accessed_at": "t",
+                "connectors": [{"connector": "dns", "findings": [
+                    {"source_id": "dns:example.com", "quote": "A/AAAA: 1.2.3.4",
+                     "url": "", "confidence": 0.9, "method": "m"}]}],
+                "skipped": {}}
+    monkeypatch.setattr(o, "collect", fake_collect)
+    out = ag.run_agent("وضعیت example.com را بررسی کن", store=store,
+                       allow_osint=True)
+    tools = [t["tool"] for t in out["trace"]]
+    assert "osint" in tools and "ingest_osint" in tools
+    oclaims = [c for c in out["dossier"]["claims"] if c["id"].startswith("o")]
+    assert oclaims and "dns:example.com" in oclaims[0]["sources"][0]["source_id"]
+    docs = [r for r in store.search_user_docs("1.2.3.4") if r["origin"] == "user"]
+    assert docs and docs[0]["title"] == "OSINT: example.com"
+
+
+def test_agent_osint_github_prefix(store, monkeypatch):
+    import engine.agent as ag
+    import engine.osint as o
+    seen = []
+    def fake_collect(target, connectors=("dns",)):
+        seen.append(target)
+        return {"target": target, "kind": "github", "accessed_at": "t",
+                "connectors": [], "skipped": {}}
+    monkeypatch.setattr(o, "collect", fake_collect)
+    ag.run_agent("فعالیت gh:octocat را ببین", store=store, allow_osint=True)
+    assert seen == ["octocat"]
+
+
+def test_agent_osint_no_false_positives(store, monkeypatch):
+    import engine.agent as ag
+    import engine.osint as o
+    calls = []
+    monkeypatch.setattr(o, "collect",
+                        lambda *a, **k: calls.append(a) or {"target": "x", "kind": "github",
+                                                             "accessed_at": "t", "connectors": [],
+                                                             "skipped": {}})
+    out = ag.run_agent("تهدید روایت دشمن را تحلیل کن", store=store, allow_osint=True)
+    assert calls == []  # واژه‌های عادی هدف نیستند
+    assert any("no scannable target" in str(t["detail"]) for t in out["trace"]
+               if t["tool"] == "osint")

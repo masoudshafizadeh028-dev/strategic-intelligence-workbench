@@ -434,7 +434,8 @@ class Handler(BaseHTTPRequestHandler):
             out = run_agent(
                 request, store=store(),
                 allow_web=bool(data.get("allow_web", False)),
-                max_steps=int(data.get("max_steps", 6) or 6),
+                allow_osint=bool(data.get("allow_osint", False)),
+                max_steps=int(data.get("max_steps", 8) or 8),
                 feedback=data.get("feedback") or "",
                 doc_id=data.get("doc_id"))
         except ValueError as exc:
