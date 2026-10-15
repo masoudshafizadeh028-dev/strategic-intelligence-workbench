@@ -1,0 +1,9 @@
+{
+  "name": "PershiaA Dev",
+  "build": { "dockerfile": "Dockerfile" },
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  }
+}
