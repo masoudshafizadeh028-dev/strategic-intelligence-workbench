@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/masoudshafizadeh028-dev/strategic-intelligence-workbench/blob/main/docs/dossier.schema.v1.json",
+  "title": "MissionDossier",
+  "description": "قرارداد نسخه‌دار پرونده مأموریت (فاز ۰). هر fact باید منبع دقیق یا پرچم بدون‌شاهد داشته باشد.",
+  "type": "object",
+  "required": ["schema_version", "request", "needs", "claims", "audit"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "request": {"type": "string", "minLength": 1},
+    "needs": {
+      "type": "array",
+      "items": {"enum": ["research", "content", "threat", "scenarios"]}
+    },
+    "claims": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/claim"}
+    },
+    "simulation": {"$ref": "#/definitions/simulation"},
+    "content_package": {"$ref": "#/definitions/content_package"},
+    "audit": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "چک‌لیست Shadow Audit؛ همه باید تیک انسانی بخورند"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "محدودیت‌های صادقانه خروجی (مثلاً قالب‌محور بودن بخش‌ها)"
+    }
+  },
+  "definitions": {
+    "certainty": {
+      "type": "string",
+      "enum": ["F", "I", "H", "M"],
+      "description": "F مستند، I استنتاج، H فرضیه، M متغیر مفقوده"
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": ["fact", "assessment", "hypothesis", "recommendation"]
+    },
+    "source": {
+      "type": "object",
+      "required": ["source_id"],
+      "properties": {
+        "source_id": {"type": "string"},
+        "title": {"type": "string"},
+        "quote": {"type": "string"},
+        "page": {"type": ["integer", "string", "null"]},
+        "section": {"type": ["string", "null"]},
+        "url": {"type": ["string", "null"]},
+        "accessed_at": {"type": ["string", "null"], "format": "date-time"}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": ["id", "type", "certainty", "statement"],
+      "properties": {
+        "id": {"type": "string"},
+        "type": {"$ref": "#/definitions/claim_type"},
+        "certainty": {"$ref": "#/definitions/certainty"},
+        "statement": {"type": "string"},
+        "sources": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/source"}
+        },
+        "no_evidence": {
+          "type": "boolean",
+          "description": "true یعنی fact بدون شاهد است و باید در UI صریح نمایش داده شود"
+        },
+        "confidence_method": {
+          "type": ["string", "null"],
+          "description": "روش محاسبه اطمینان؛ بدون آن درصد نمایش داده نمی‌شود"
+        },
+        "extracted_by": {"type": "string"},
+        "extracted_at": {"type": "string", "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {"const": "fact"},
+              "certainty": {"const": "F"}
+            }
+          },
+          "then": {
+            "anyOf": [
+              {"properties": {"no_evidence": {"const": true}}, "required": ["no_evidence"]},
+              {"properties": {"sources": {"minItems": 1}}, "required": ["sources"]}
+            ],
+            "description": "fact مستند یا منبع دارد یا صریحاً بدون شاهد است"
+          }
+        }
+      ]
+    },
+    "simulation": {
+      "type": "object",
+      "properties": {
+        "model": {"const": "cascade-8layer"},
+        "inputs": {"type": "object"},
+        "spi": {"type": "number"},
+        "posture": {"type": "string"},
+        "recommendations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "content_package": {
+      "type": "object",
+      "properties": {
+        "format": {"type": "string"},
+        "doc_ref": {"type": ["string", "null"]},
+        "body": {"type": "string"},
+        "template_based": {
+          "type": "boolean",
+          "description": "true یعنی خروجی قالب است نه تولید LLM؛ باید در UI برچسب بخورد"
+        }
+      }
+    }
+  }
+}
