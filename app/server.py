@@ -231,6 +231,8 @@ class Handler(BaseHTTPRequestHandler):
             self._websearch()
         elif path == "/api/v1/osint":
             self._osint()
+        elif path == "/api/v1/content":
+            self._content()
         elif path == "/api/v1/osint/targets":
             self._osint_target_save()
         else:
@@ -472,6 +474,84 @@ class Handler(BaseHTTPRequestHandler):
             self._send(500, {"error": str(exc)})
             return
         self._send(200, out)
+
+    def _content(self):
+        """غنی‌سازی محتوا با LLM — POST /api/v1/content (صریح و opt-in).
+
+        ورودی: {draft: str (خروجی قالب), doc_id?: str, format?: str,
+                tone?: str, allow_llm: bool (اجباری true), model?: str,
+                max_tokens?: int (سقف 800)}
+        خروجی: {output, model, usage, prompt_preview, template_based: False}
+        شکست provider → 502 صادقانه؛ هرگز خروجی قالبی به‌جای LLM جا نمی‌زند.
+        """
+        data = self._read_json()
+        if not isinstance(data, dict) or data.get("__too_large__"):
+            self._send(400, {"error": "invalid JSON"})
+            return
+        draft = data.get("draft", "")
+        if not isinstance(draft, str) or not draft.strip():
+            self._send(400, {"error": "draft required"})
+            return
+        if len(draft) > 6000:
+            self._send(400, {"error": "draft too long (max 6000 chars)"})
+            return
+        if data.get("allow_llm") is not True:
+            self._send(400, {"error": "LLM opt-in required (allow_llm=true). "
+                                      "مقصد پرامپت: OpenRouter (سرویس بیرونی، هزینه‌بر)"})
+            return
+        model = data.get("model") or DEFAULT_MODEL
+        if not isinstance(model, str) or not model:
+            self._send(400, {"error": "invalid model"})
+            return
+        try:
+            max_tokens = min(int(data.get("max_tokens", 800) or 800), 800)
+        except (TypeError, ValueError):
+            self._send(400, {"error": "invalid max_tokens"})
+            return
+        doc_ctx = ""
+        if data.get("doc_id"):
+            doc = store().get_document(data["doc_id"])
+            if doc is None:
+                self._send(400, {"error": "doc not found"})
+                return
+            doc_ctx = f"سند مرجع ({doc['id']} — {doc['title']}): {(doc.get('summary') or '')[:500]}\n\n"
+        fmt = data.get("format") or "متن"
+        tone = data.get("tone") or "تحلیلی"
+        prompt = (f"{doc_ctx}پیش‌نویس قالب‌محور زیر را به یک {fmt} با لحن {tone} "
+                  f"غنی‌سازی کن. ادعاها را فقط از متن داده‌شده بگیر؛ "
+                  f"چیز جدید جعل نکن. پاسخ فارسی.\n\n---\n{draft[:4000]}")
+        try:
+            completion = llm_client().chat.completions.create(
+                model=model, max_tokens=max_tokens,
+                messages=[{"role": "user", "content": prompt}])
+            text = completion.choices[0].message.content or ""
+            usage = {}
+            u = getattr(completion, "usage", None)
+            if u is not None:
+                if isinstance(u, dict):
+                    items = u.items()
+                else:
+                    items = ((k, getattr(u, k, None)) for k in
+                             ("prompt_tokens", "completion_tokens", "total_tokens"))
+                for k, v in items:
+                    if isinstance(v, (int, float)):
+                        usage[k] = v
+        except RuntimeError as exc:
+            self._send(503, {"error": str(exc)})
+            return
+        except Exception as exc:  # noqa: BLE001
+            self._send(502, {"error": f"provider failed: {exc}"})
+            return
+        if not text.strip():
+            self._send(502, {"error": "provider returned empty output"})
+            return
+        store().log_run("content",
+                        {"doc_id": data.get("doc_id"), "format": fmt, "model": model},
+                        {"chars": len(text), "usage": usage})
+        self._send(200, {"output": text, "model": model, "usage": usage,
+                         "prompt_preview": prompt[:500],
+                         "prompt_destination": "OpenRouter (external, billable)",
+                         "template_based": False})
 
     def _osint(self):
         """OSINT محدود و مجاز — POST /api/v1/osint.

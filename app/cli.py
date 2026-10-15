@@ -234,6 +234,43 @@ def cmd_osint_targets(args) -> int:
     return 0
 
 
+def cmd_content(args) -> int:
+    import os
+    if args.file:
+        p = Path(args.file)
+        if not p.is_file():
+            print(f"خطا: فایل یافت نشد: {args.file}", file=sys.stderr)
+            return 2
+        draft = p.read_text(encoding="utf-8", errors="replace")
+    elif args.draft:
+        draft = args.draft
+    else:
+        print("خطا: یکی از --draft/--file", file=sys.stderr)
+        return 2
+    if not args.allow_llm:
+        print("خطا: نیازمند --allow-llm (رضایت صریح؛ مقصد: OpenRouter، هزینه‌بر)",
+              file=sys.stderr)
+        return 2
+    from server import DEFAULT_MODEL, llm_client
+    model = args.model or DEFAULT_MODEL
+    prompt = (f"پیش‌نویس قالب‌محور زیر را به یک {args.format} با لحن {args.tone} "
+              f"غنی‌سازی کن. ادعاها را فقط از متن داده‌شده بگیر؛ چیز جدید جعل نکن. "
+              f"پاسخ فارسی.\n\n---\n{draft[:4000]}")
+    print(f"مقصد: OpenRouter | مدل: {model}", file=sys.stderr)
+    try:
+        completion = llm_client().chat.completions.create(
+            model=model, max_tokens=800,
+            messages=[{"role": "user", "content": prompt}])
+        print(completion.choices[0].message.content or "")
+    except RuntimeError as e:
+        print(f"خطا: {e}", file=sys.stderr)
+        return 2
+    except Exception as e:  # noqa: BLE001
+        print(f"خطا: provider failed: {e}", file=sys.stderr)
+        return 2
+    return 0
+
+
 def cmd_ocr(args) -> int:
     from engine.ocr import OcrError, extract_text_layer, search_pages
     try:
@@ -320,6 +357,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--target", default="")
     p.add_argument("--label", default="")
     p.set_defaults(func=cmd_osint_targets)
+
+    p = sub.add_parser("content", help="غنی‌سازی محتوا با LLM (opt-in صریح)")
+    p.add_argument("--draft", default="")
+    p.add_argument("--file", default="")
+    p.add_argument("--doc", default=None)
+    p.add_argument("--format", default="متن")
+    p.add_argument("--tone", default="تحلیلی")
+    p.add_argument("--model", default="")
+    p.add_argument("--allow-llm", action="store_true",
+                   help="رضایت صریح برای ارسال به OpenRouter (هزینه‌بر)")
+    p.set_defaults(func=cmd_content)
     return ap
 
 
