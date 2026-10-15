@@ -1,0 +1,12 @@
+# وابستگی‌های سنگین که فقط برای حالت کامل لازم‌اند.
+# نصب: pip install -r requirements-optional.txt
+# توجه: Tesseract و Poppler باید در سطح سیستم نصب باشند.
+#
+#   Ubuntu/Debian:
+#     sudo apt-get install -y tesseract-ocr tesseract-ocr-fas poppler-utils
+#   macOS:
+#     brew install tesseract tesseract-lang poppler
+#
+python-telegram-bot==21.6
+pyrogram==2.0.106
+TgCrypto==1.2.5

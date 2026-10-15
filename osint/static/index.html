@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0f16">
+<title>PerShiaA OSINT | داشبورد تحلیل شبکه</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<style>
+:root{--bg:#0b0f16;--panel:#121a24;--panel2:#1a2533;--ink:#e7eef7;--muted:#8fa0b2;--cyan:#4fd1c5;--gold:#d4b15b;--rose:#f0707e;--indigo:#7f8cf5;--line:#23303f;--ok:#68ce8f;--r:14px}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 10% -10%,#182636 0,transparent 45%),var(--bg);color:var(--ink);font:16px/1.8 system-ui,"Tahoma",sans-serif}
+header{padding:22px max(18px,calc((100vw - 1280px)/2));border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:clamp(22px,2.8vw,32px);color:var(--cyan)}
+header p{margin:3px 0 0;color:var(--muted);font-size:14px}
+.wrap{max-width:1280px;margin:24px auto;padding:0 18px;display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:0 12px 30px #0003}
+h2{font-size:18px;margin:0 0 12px;color:var(--gold)}
+label{display:block;font-weight:600;margin:10px 0 6px;font-size:14px}
+input[type=text]{width:100%;font:inherit;color:var(--ink);background:#0a1017;border:1px solid var(--line);border-radius:10px;padding:11px}
+input:focus-visible,button:focus-visible,.mod:focus-within{outline:3px solid var(--cyan);outline-offset:2px}
+.mod{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;margin-bottom:7px;background:#0f1822;font-size:14px}
+.mod input{accent-color:var(--cyan)}
+.mod span.why{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.mod.disabled{opacity:.5}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 16px;cursor:pointer;background:var(--cyan);color:#06201d;margin-top:12px;width:100%}
+button.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--ink);width:auto;margin:0}
+button:disabled{opacity:.55;cursor:progress}
+.stage{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px;background:#0f1822;font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;margin-top:7px;background:var(--muted)}
+.dot.ok{background:var(--ok)}.dot.run{background:var(--gold)}.dot.err{background:var(--rose)}
+#cy{width:100%;height:520px;background:#080d13;border:1px solid var(--line);border-radius:12px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.sw{width:10px;height:10px;border-radius:50%}
+pre{background:#080d13;border:1px solid var(--line);border-radius:10px;padding:12px;max-height:260px;overflow:auto;font-size:12.5px;color:#bdd3e7;white-space:pre-wrap;word-break:break-word}
+.hint{color:var(--muted);font-size:13px}
+.err{color:var(--rose)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tab{font:inherit;font-size:13px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;cursor:pointer;width:auto;margin:0}
+.tab.active{color:var(--ink);border-color:var(--cyan)}
+.tabpane{display:none}.tabpane.active{display:block}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}#cy{height:380px}}
+@media print{body{background:#fff;color:#111}.panel{background:#fff;box-shadow:none}.no-print{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>PerShiaA OSINT</h1>
+    <p>تحلیل چندعامله‌ی منابع عمومی — فقط داده‌ی مجاز، بدون اسکن پورت یا منابع غیرقانونی</p>
+  </div>
+  <span class="lg">نسخه ۱.۰ · آفلاین-اول</span>
+</header>
+
+<div class="wrap">
+  <section class="panel">
+    <h2>تعریف هدف و منابع</h2>
+    <label for="target">هدف (دامنه یا نام کاربری گیت‌هاب)</label>
+    <input id="target" type="text" placeholder="example.com" autocomplete="off">
+    <label>ماژول‌های اسکن</label>
+    <div id="mods"></div>
+    <p class="hint">ماژول‌های خارج از محدوده‌ی مجاز عمداً پیاده‌سازی نشده‌اند و درخواستشان رد می‌شود.</p>
+    <button id="run">اجرای تحلیل چندعامله</button>
+    <button id="demo" class="ghost" style="margin-top:8px">نمونه</button>
+    <div style="margin-top:16px">
+      <h2>وضعیت نقش‌ها</h2>
+      <div id="stages"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>گراف شبکه‌ی هویت</h2>
+    <div id="cy"></div>
+    <div class="legend">
+      <span class="lg"><i class="sw" style="background:#4fd1c5"></i>دامنه</span>
+      <span class="lg"><i class="sw" style="background:#f0707e"></i>IP</span>
+      <span class="lg"><i class="sw" style="background:#7f8cf5"></i>گیت‌هاب</span>
+      <span class="lg"><i class="sw" style="background:#d4b15b"></i>ایمیل (ماسک‌شده)</span>
+      <span class="lg"><i class="sw" style="background:#68ce8f"></i>نام کاربری</span>
+    </div>
+    <p class="hint" style="margin-top:8px">برای زوم و جابه‌جایی، ماوس یا لمس را استفاده کن. روی گره بزن تا جزئیاتش را ببینی.</p>
+  </section>
+
+  <section class="panel" style="grid-column:1/-1">
+    <div class="tabs">
+      <button class="tab active" data-t="report">گزارش</button>
+      <button class="tab" data-t="emails">ایمیل‌های کشف‌شده</button>
+      <button class="tab" data-t="raw">خروجی فنی</button>
+      <button class="tab" data-t="scope">محدوده و اخلاق</button>
+    </div>
+    <div id="report" class="tabpane active"><p class="hint">هنوز تحلیلی اجرا نشده است.</p></div>
+    <div id="emails" class="tabpane"><p class="hint">برای کشف ایمیل، درخواست را با ماژول گیت‌هاب روی یک مخزن محلی اجرا کن: <code>python3 github_history.py --repo /path/to/repo</code></p></div>
+    <div id="raw" class="tabpane"><pre>—</pre></div>
+    <div id="scope" class="tabpane">
+      <h2>محدوده‌ی مجاز</h2>
+      <p>این ابزار تنها متادیتای عمومی و منابع مجاز را می‌خواند. پیاده‌سازی موارد زیر عمداً انجام نشده است:</p>
+      <ul>
+        <li>اسکن پورت و شناسایی سرویس‌های باز</li>
+        <li>ورود، بهره‌برداری یا دور زدن احراز هویت</li>
+        <li>خرید یا نمایش داده‌های نقض‌شده</li>
+        <li>خزش منابع دارک‌وب یا محتوای غیرقانونی</li>
+        <li>جمع‌آوری داده‌ی شخصی بدون مبنای مجاز</li>
+      </ul>
+      <p class="hint">هر یافته، فرضیه است نه اثبات هویت یا تخلف. پیش از هر اقدام، مبنای قانونی و مجوز لازم است.</p>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js" integrity="sha384-IWROdLKRsN1UuJywMlWl7/blXQ8GEooN2n7dzTxfEPd7ybYIKCUJ2Ol/1Gpf3YV4" crossorigin="anonymous" onerror="loadCyFallback()"></script>
+<script>
+/* Fallback: اگر CDN اصلی در دسترس نبود، از unpkg تلاش کن. هش SRI بالا برای نسخه‌ی 3.30.2 محاسبه شده؛ پس از ارتقای نسخه دوباره محاسبه کن. */
+function loadCyFallback(){
+  if(typeof cytoscape!=='undefined')return;
+  var s=document.createElement('script');
+  s.src='https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js';
+  s.crossOrigin='anonymous';
+  s.onload=function(){if(typeof initGraph==='function'){try{initGraph()}catch(e){}}};
+  s.onerror=function(){
+    var el=document.getElementById('cy');
+    if(el)el.innerHTML='<p class="hint err" style="padding:16px">کتابخانه‌ی گراف (cytoscape) بارگذاری نشد. اتصال اینترنت را بررسی کن یا صفحه را با کش تازه بازخوانی کن.</p>';
+  };
+  document.head.appendChild(s);
+}
+</script>
+<script>
+const $=s=>document.querySelector(s);
+/* لیست پیش‌فرض ماژول‌ها (fallback آفلاین)؛ در loadModules از GET /api/modules به‌روزرسانی می‌شود. */
+const FALLBACK_MODULES=[
+  {id:'dns',label:'DNS',why:'رکوردهای عمومی A/AAAA از resolver سیستم — آفلاین کار می‌کند'},
+  {id:'github',label:'متادیتای عمومی گیت‌هاب',why:'پروفایل عمومی از REST API — نیازمند اینترنت'},
+  {id:'social',label:'رسانه‌های اجتماعی',why:'خزش خودکار پیاده‌سازی نشده (محدودیت اخلاقی/قانونی)',disabled:true},
+  {id:'darkweb',label:'رصد دارک‌وب',why:'خارج از محدوده‌ی مجاز — پیاده‌سازی نشده',disabled:true},
+  {id:'breach',label:'جست‌وجوی نقض داده',why:'داده‌ی نقض‌شده نمایش داده نمی‌شود',disabled:true},
+];
+let MODULES=FALLBACK_MODULES.slice();
+let cy=null;
+
+function buildModules(){
+  $('#mods').innerHTML=MODULES.map(m=>`
+    <label class="mod ${m.disabled?'disabled':''}">
+      <input type="checkbox" value="${m.id}" ${m.disabled?'disabled':m.id==='dns'?'checked':''}>
+      <span><strong>${m.label}</strong><span class="why">${m.why}</span></span>
+    </label>`).join('');
+}
+
+/* ماژول‌های مجاز را از بک‌اند بگیر؛ در صورت خطا همان fallback محلی می‌ماند. */
+async function loadModules(){
+  try{
+    const r=await fetch('/api/modules',{cache:'no-store'});
+    if(!r.ok)throw new Error('bad status');
+    const j=await r.json();
+    const allowed=Array.isArray(j)?j:j.allowed||j.modules;
+    if(!Array.isArray(allowed)||!allowed.length)throw new Error('empty');
+    const notImpl=new Set(j.not_implemented||j.notImplemented||[]);
+    MODULES=allowed.map(id=>String(id)).map(id=>{
+      const prev=FALLBACK_MODULES.find(m=>m.id===id);
+      if(prev)return {...prev,disabled:false};
+      return {id,label:id,why:'ماژول مجاز (از بک‌اند)'};
+    });
+    // ماژول‌های پیاده‌سازی‌نشده را برای شفافیت، غیرفعال نگه دار
+    (Array.isArray(j.not_implemented)?j.not_implemented:[]).forEach(id=>{
+      if(!MODULES.some(m=>m.id===id))MODULES.push({id,label:id,why:'خارج از محدوده‌ی مجاز — پیاده‌سازی نشده',disabled:true});
+    });
+  }catch(e){
+    MODULES=FALLBACK_MODULES.slice();
+  }
+  buildModules();
+}
+
+function cyAvailable(){
+  if(typeof cytoscape==='undefined'){
+    $('#cy').innerHTML='<p class="hint err" style="padding:16px">کتابخانه‌ی گراف (cytoscape) بارگذاری نشد. اتصال اینترنت را بررسی کن و صفحه را تازه‌سازی کن.</p>';
+    return false;
+  }
+  return true;
+}
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function stage(name,status,detail){
+  const d=status==='ok'?'ok':status==='run'?'run':status==='err'?'err':'';
+  $('#stages').insertAdjacentHTML('beforeend',`<div class="stage"><span class="dot ${d}"></span><div><strong>${esc(name)}</strong><br><small>${esc(detail)}</small></div></div>`);
+}
+
+function initGraph(){
+  if(cy) return cy;
+  if(!cyAvailable())return null;
+  cy=cytoscape({
+    container:$('#cy'),
+    elements:[],
+    style:[
+      {selector:'node',style:{'background-color':'#7f8cf5','label':'data(label)','color':'#e7eef7','font-size':'10px','text-valign':'bottom','text-margin-y':4,'width':26,'height':26,'border-width':2,'border-color':'#0b0f16'}},
+      {selector:'node[kind="domain"]',style:{'background-color':'#4fd1c5','width':40,'height':40}},
+      {selector:'node[kind="ip"]',style:{'background-color':'#f0707e'}},
+      {selector:'node[kind="github"]',style:{'background-color':'#7f8cf5'}},
+      {selector:'node[kind="email"]',style:{'background-color':'#d4b15b'}},
+      {selector:'node[kind="username"]',style:{'background-color':'#68ce8f'}},
+      {selector:'node:selected',style:{'border-color':'#d4b15b','border-width':4}},
+      {selector:'edge',style:{'width':1.4,'line-color':'#3a4a5c','target-arrow-color':'#3a4a5c','target-arrow-shape':'triangle','curve-style':'bezier','label':'data(label)','font-size':'9px','color':'#8fa0b2'}},
+    ],
+    layout:{name:'cose',animate:false,nodeRepulsion:9000,idealEdgeLength:110},
+    wheelSensitivity:0.22,
+  });
+  cy.on('tap','node',evt=>{
+    const n=evt.target;
+    $('#report').innerHTML=`<h2>جزئیات گره</h2><pre>${esc(JSON.stringify({id:n.id(),label:n.data('label'),kind:n.data('kind')},null,2))}</pre>`;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t==='report'));
+    document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='report'));
+  });
+  return cy;
+}
+
+function renderGraph(graph){
+  const c=initGraph();
+  if(!c)return;
+  c.elements().remove();
+  const nodes=(graph.nodes||[]).map(n=>({data:n.data||n}));
+  const edges=(graph.edges||[]).map(e=>({data:e.data||e}));
+  c.add([...nodes,...edges]);
+  c.layout({name:nodes.length>8?'cose':'concentric',animate:false,nodeRepulsion:9000,idealEdgeLength:110}).run();
+  c.fit(undefined,30);
+}
+
+async function run(){
+  const target=$('#target').value.trim();
+  const modules=[...document.querySelectorAll('#mods input:checked')].map(i=>i.value);
+  if(!target){$('#report').innerHTML='<p class="hint err">اول هدف را وارد کن.</p>';return}
+  if(!modules.length){$('#report').innerHTML='<p class="hint err">حداقل یک ماژول را انتخاب کن.</p>';return}
+  $('#stages').innerHTML='';$('#run').disabled=true;
+  stage('مدیر اجرا','run','تخصیص مأموریت و تعیین محدوده');
+  stage('تحقیق','run',`اجرای ماژول‌ها: ${modules.join('، ')}`);
+  try{
+    const r=await fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target,modules})});
+    const j=await r.json();
+    if(!r.ok||j.error){throw new Error((j.error&&j.error.code)||j.detail||(typeof j.error==='string'?j.error:null)||'خطای سرویس')}
+    // سازگاری با دو شکل پاسخ: خروجی جدید ManagerAgent و خروجی مستقیم run_scan
+    const research=j.research||j;
+    const synthesis=j.synthesis||{};
+    const graph=synthesis.graph||research.graph||j.graph||{nodes:[],edges:[]};
+    const summary=synthesis.summary||research.summary||j.summary||{};
+    const review=j.review||{approved:true,issues:[]};
+    const mods=(research.modules||research.requested_modules||j.modules)||{};
+    const nodeCount=summary.nodes??(graph.nodes||[]).length;
+    const edgeCount=summary.edges??(graph.edges||[]).length;
+    stage('سنتز','ok',`${nodeCount} گره و ${edgeCount} یال`);
+    stage('بازبینی','ok',review.approved?'تأیید شد':'نیازمند بازبینی');
+    renderGraph(graph);
+    const dns=mods.dns||{};
+    const shownTarget=j.target||research.target||target;
+    const shownStatus=j.status||(review.approved?'complete':'needs_review');
+    $('#report').innerHTML=`
+      <h2>خلاصه‌ی یافته‌ها</h2>
+      <pre>${esc(JSON.stringify({target:shownTarget,engine:research.engine||j.engine,status:shownStatus,review,dns:{status:dns.status,records:dns.records,reason:dns.reason}},null,2))}</pre>
+      <p class="hint">${esc((review.issues||[]).join('؛ ')||'هیچ ایرادی در بازبینی یافت نشد.')}</p>`;
+    $('#emails').innerHTML=`<h2>ایمیل‌ها</h2><p class="hint">در این مسیر API، ایمیل خامی جمع نمی‌شود. برای کشف ایمیل‌های ماسک‌شده از تاریخچه‌ی کامیت، از <code>github_history.py</code> استفاده کن.</p>`;
+    $('#raw').innerHTML=`<pre>${esc(JSON.stringify(j,null,2))}</pre>`;
+  }catch(e){
+    stage('خطا','err',String(e.message||e));
+    $('#report').innerHTML='<p class="hint err">اجرا ناموفق بود. سرویس را با <code>python3 osint/app.py --port 8002</code> (از ریشه‌ی مخزن) یا <code>python3 app.py --port 8002</code> (از پوشه‌ی osint) اجرا کن.</p>';
+  }finally{$('#run').disabled=false}
+}
+
+$('#demo').onclick=()=>{$('#target').value='example.com'};
+$('#run').onclick=run;
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id===t.dataset.t));
+});
+if(!cyAvailable()){/* پیام خطا داخل #cy نمایش داده شد */}
+loadModules();
+</script>
+</body>
+</html>

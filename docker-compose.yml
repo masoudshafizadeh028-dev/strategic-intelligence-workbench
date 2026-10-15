@@ -1,0 +1,73 @@
+services:
+  doctrine:
+    build: ./doctrine
+    container_name: pershiaa-doctrine
+    restart: unless-stopped
+    ports: ["8001:8001"]
+    volumes: ["./data:/data"]
+    environment:
+      PERSHIAA_DATA_DIR: /data
+      PERSHIAA_MODE: auto
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8001/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  osint:
+    build: ./osint
+    container_name: pershiaa-osint
+    restart: unless-stopped
+    ports: ["8002:8002"]
+    volumes: ["./data:/data"]
+    environment:
+      PERSHIAA_DATA_DIR: /data
+      DOCTRINE_URL: http://doctrine:8001
+    depends_on: [doctrine]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8002/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  hub:
+    build:
+      context: .
+      dockerfile: hub/Dockerfile
+    container_name: pershiaa-hub
+    restart: unless-stopped
+    ports: ["8000:8000"]
+    volumes: ["./data:/data"]
+    environment:
+      PERSHIAA_DATA_DIR: /data
+      DOCTRINE_URL: http://doctrine:8001
+      OSINT_URL: http://osint:8002
+      WEB_URL: http://web:80
+    depends_on: [doctrine, osint]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  web:
+    # TODO: ایمیج را با digest پین کن (مثلاً nginx:alpine@sha256:<digest>)؛ digest معتبر در دسترس نبود، تگ شناور نگه داشته شد.
+    image: nginx:alpine
+    container_name: pershiaa-web
+    restart: unless-stopped
+    ports: ["8080:80"]
+    volumes: ["./web:/usr/share/nginx/html:ro"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  telegram:
+    build: ./bots/telegram
+    container_name: pershiaa-telegram
+    restart: unless-stopped
+    profiles: [optional]
+    volumes: ["./downloads:/app/downloads"]
+    environment:
+      TG_OUT_DIR: /app/downloads

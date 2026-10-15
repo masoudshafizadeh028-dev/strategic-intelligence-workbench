@@ -1,0 +1,90 @@
+name: AI Generate
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "حالت تولید"
+        required: true
+        default: "image"
+        type: choice
+        options: [image, text]
+      prompt:
+        description: "پرامپت (فارسی یا انگلیسی)"
+        required: true
+        type: string
+      smart:
+        description: "بهبود خودکار پرامپت فارسی (فقط تصویر)"
+        required: false
+        default: true
+        type: boolean
+      model:
+        description: "مدل (خالی = محلی: local-svg یا local-template)"
+        required: false
+        default: ""
+        type: string
+      temperature:
+        description: "دما برای متن (۰ تا ۲)"
+        required: false
+        default: "0.7"
+        type: string
+      system_message:
+        description: "پیام سیستم برای متن"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    name: تولید محتوا
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: دریافت مخزن
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: خودآزمایی ai_melli
+        run: python3 ai/generate.py --selftest
+
+      - name: تولید
+        env:
+          MODE: ${{ inputs.mode }}
+          PROMPT: ${{ inputs.prompt }}
+          MODEL: ${{ inputs.model }}
+          TEMPERATURE: ${{ inputs.temperature }}
+          SYSTEM_MESSAGE: ${{ inputs.system_message }}
+          SMART: ${{ inputs.smart }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          IMAGE_API_URL: ${{ secrets.IMAGE_API_URL }}
+          IMAGE_API_KEY: ${{ secrets.IMAGE_API_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ai/output
+          ARGS=(--mode "$MODE" --prompt "$PROMPT" --out ai/output)
+          if [ "$MODE" = "image" ]; then
+            [ "$SMART" = "true" ] && ARGS+=(--smart)
+            [ -n "$MODEL" ] && ARGS+=(--model "$MODEL")
+          else
+            ARGS+=(--temperature "$TEMPERATURE")
+            [ -n "$MODEL" ] && ARGS+=(--model "$MODEL")
+            [ -n "$SYSTEM_MESSAGE" ] && ARGS+=(--system-message "$SYSTEM_MESSAGE")
+          fi
+          python3 ai/generate.py "${ARGS[@]}"
+          python3 ai/gallery.py --dir ai/output
+
+      - name: بارگذاری خروجی
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-melli-output
+          path: |
+            ai/output/
+          retention-days: 30

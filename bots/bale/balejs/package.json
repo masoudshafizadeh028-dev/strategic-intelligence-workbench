@@ -1,0 +1,24 @@
+{
+  "name": "@pershiaa/balejs",
+  "version": "1.0.0",
+  "description": "کتابخانه TypeScript/Node.js برای بله — نشست کاربر، API ربات، پیام، گروه، پرداخت و کیف پول",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
+  },
+  "files": ["dist", "src", "README.md"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "selftest": "node scripts/build.mjs && node scripts/selftest.mjs",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["bale", "messenger", "bot", "typescript", "pershiaa"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

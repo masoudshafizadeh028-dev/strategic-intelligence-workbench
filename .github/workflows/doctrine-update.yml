@@ -1,0 +1,54 @@
+name: Doctrine Analyze
+
+on:
+  workflow_dispatch:
+    inputs:
+      request:
+        description: "متن درخواست تحلیلی"
+        required: true
+        type: string
+      corpus_path:
+        description: "مسیر پیکره (اختیاری، نسبی به مخزن)"
+        required: false
+        default: "data/corpus"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: ساخت پرونده‌ی تحلیلی
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: دریافت مخزن
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: خودآزمایی موتور (۵۲ ارزیابی)
+        working-directory: doctrine
+        run: python3 doctrine_engine.py --selftest
+
+      - name: ساخت پرونده
+        env:
+          REQUEST: ${{ inputs.request }}
+          CORPUS: ${{ inputs.corpus_path }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/dossiers
+          python3 doctrine/doctrine_engine.py \
+            --request "$REQUEST" \
+            --corpus "$CORPUS" \
+            --out data/dossiers/dossier.json
+
+      - name: بارگذاری خروجی
+        uses: actions/upload-artifact@v4
+        with:
+          name: doctrine-dossier
+          path: data/dossiers/dossier.json
+          retention-days: 30

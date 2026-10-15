@@ -1,0 +1,6 @@
+# DEPLOY: قبل از دیپلوی، دامنه‌ی placeholder در Sitemap را با دامنه‌ی نهایی عوض کن.
+# robots.txt — اندیشکده تمدن نوین اسلامی (PerShiaA)
+User-agent: *
+Allow: /
+
+Sitemap: https://masoudshafizadeh028-dev.github.io/pershiaa/sitemap.xml

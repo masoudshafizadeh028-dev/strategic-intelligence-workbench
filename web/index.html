@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a0f16">
+<title>اندیشکده تمدن نوین اسلامی | PerShiaA</title>
+<meta name="description" content="اندیشکده تمدن نوین اسلامی — محورهای تخصصی، نقشه ذهنی تعاملی، نقشه راه پروژه و داشبورد پیشرفت. پژوهش مستند برای تصمیم‌سازی.">
+<meta name="author" content="PerShiaA">
+<!-- DEPLOY: قبل از دیپلوی، دامنه‌ی placeholder زیر را با دامنه‌ی نهایی عوض کن (canonical + og:url + sitemap.xml + robots.txt). -->
+<link rel="canonical" href="https://masoudshafizadeh028-dev.github.io/pershiaa/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:url" content="https://masoudshafizadeh028-dev.github.io/pershiaa/">
+<meta property="og:title" content="اندیشکده تمدن نوین اسلامی | PerShiaA">
+<meta property="og:description" content="محورهای تخصصی، نقشه ذهنی تعاملی و نقشه راه پروژه‌ی اندیشکده تمدن نوین اسلامی.">
+<meta property="og:image" content="https://masoudshafizadeh028-dev.github.io/pershiaa/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://masoudshafizadeh028-dev.github.io/pershiaa/og-cover.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0f16'/%3E%3Cpath d='M16 6l3.2 6.6L26 14l-5 4.8L22.2 26 16 22.6 9.8 26 11 18.8 6 14l6.8-1.4z' fill='%23d4b15b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f16; --surface:#111a25; --surface-2:#18242f; --ink:#e8eff7; --muted:#93a3b4;
+  --gold:#d4b15b; --gold-dim:#a98a3c; --teal:#57cfbe; --indigo:#7f8cf5; --rose:#ef7a86;
+  --line:#24313f; --ok:#68ce8f; --warn:#e5b85e; --idle:#5b6b7d;
+  --r:16px; --shadow:0 1px 2px #0004,0 14px 34px -14px #0007;
+  --s0:clamp(1rem,.95rem + .3vw,1.09rem);
+  --s1:clamp(1.18rem,1.08rem + .5vw,1.42rem);
+  --s2:clamp(1.45rem,1.25rem + 1vw,2.05rem);
+  --s3:clamp(1.9rem,1.55rem + 2vw,3rem);
+  --s4:clamp(2.4rem,1.9rem + 3.2vw,4.2rem);
+  --gap:clamp(.9rem,.7rem + 1vw,1.4rem);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:var(--s0)/1.9 "Vazirmatn","IRANSans","B Nazanin",system-ui,"Segoe UI","Tahoma",Arial,sans-serif}
+/* آفلاین‌اول: اگر Vazirmatn (گوگل‌فونت) لود نشد، system-ui/Tahoma جایگزین می‌شود؛ font-display:swap از سمت گوگل فعال است. */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 76% 46% at 50% -14%,rgba(212,177,91,.09),transparent),
+             radial-gradient(ellipse 54% 38% at 84% 84%,rgba(87,207,190,.05),transparent)}
+header,main,footer{position:relative;z-index:1}
+a{color:var(--teal)}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px;border-radius:6px}
+.skip{position:absolute;inset-inline-start:-9999px}
+.skip:focus{inset-inline-start:12px;top:12px;background:var(--gold);color:#171410;padding:8px 14px;border-radius:8px;z-index:99}
+
+/* nav */
+.topbar{position:sticky;top:0;z-index:40;backdrop-filter:blur(12px);background:rgba(10,15,22,.82);border-bottom:1px solid var(--line)}
+.topbar .in{max-width:1180px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--ink);text-decoration:none}
+.brand .mk{width:30px;height:30px;border-radius:8px;background:linear-gradient(140deg,var(--gold),var(--gold-dim));display:grid;place-items:center;color:#14110b;font-size:15px}
+nav{margin-inline-start:auto;display:flex;gap:6px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;font-size:.92rem;padding:7px 11px;border-radius:9px;transition:.18s}
+nav a:hover{color:var(--ink);background:var(--surface-2)}
+.search-btn{font:inherit;font-size:.9rem;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:8px 13px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.search-btn kbd{font-size:.7rem;border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--muted)}
+
+/* hero */
+.hero{padding:clamp(2.4rem,5vw,4.4rem) 18px clamp(1.6rem,3vw,2.6rem);max-width:1180px;margin:0 auto}
+.eyebrow{font-size:.82rem;letter-spacing:.14em;color:var(--gold);font-weight:700;margin-bottom:14px}
+.hero h1{font-size:var(--s4);line-height:1.25;margin:0 0 16px;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;background:linear-gradient(120deg,var(--gold),var(--teal));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p.lead{color:var(--muted);max-width:62ch;font-size:var(--s1);line-height:1.85;margin:0 0 26px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:26px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.stat b{display:block;font-size:1.7rem;color:var(--gold);line-height:1.3}
+.stat span{font-size:.85rem;color:var(--muted)}
+
+/* sections */
+section{padding:clamp(2rem,4vw,3.2rem) 0;border-top:1px solid var(--line)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+h2{font-size:var(--s3);margin:0 0 8px;letter-spacing:-.015em;display:flex;align-items:baseline;gap:12px}
+h2 .n{font-size:.8rem;font-weight:800;color:var(--gold);opacity:.65;letter-spacing:.1em}
+.sub{color:var(--muted);max-width:66ch;margin:0 0 28px}
+h3{font-size:var(--s1);margin:0 0 8px}
+
+/* pillars */
+.grid{display:grid;gap:var(--gap)}
+.g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.card:hover{border-color:rgba(212,177,91,.22)}
+.card .ico{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-size:1.15rem;margin-bottom:12px;background:var(--surface-2)}
+.card p{color:var(--muted);font-size:.93rem;margin:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.tag{font-size:.74rem;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:3px 9px}
+
+/* mind map */
+.mindwrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--gap);box-shadow:var(--shadow)}
+.mindtop{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.mindtop .hint{color:var(--muted);font-size:.85rem;margin-inline-start:auto}
+.mind{width:100%;height:clamp(340px,52vh,500px);background:#070c12;border:1px solid var(--line);border-radius:12px;display:block;touch-action:none;cursor:grab}
+.mind:active{cursor:grabbing}
+.mind .lnk{stroke:#33475b;stroke-width:1.3}
+.mind .nd{cursor:pointer}
+.mind .nd:focus-visible{outline:3px solid var(--teal);outline-offset:4px;border-radius:8px}
+.mind .nd circle{cursor:pointer;transition:.2s}
+.mind .nd:hover circle{stroke-width:3}
+.mind .nd text{fill:var(--ink);font-size:11px;pointer-events:none;font-family:inherit}
+.mind .nd.dim{opacity:.24}
+.mind .lnk.dim{opacity:.18}
+.detail{margin-top:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px;min-height:64px}
+.detail b{color:var(--gold)}
+.detail p{color:var(--muted);font-size:.9rem;margin:6px 0 0}
+
+/* roadmap */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.chip{font:inherit;font-size:.85rem;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:7px 15px;cursor:pointer;transition:.18s}
+.chip:hover{color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#171410;font-weight:700}
+.phase{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:10px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.phase .idx{font-size:.8rem;font-weight:800;color:var(--gold);opacity:.7;width:2.4rem}
+.phase h3{margin:0 0 3px;font-size:1rem}
+.phase p{margin:0;color:var(--muted);font-size:.86rem}
+.pill{font-size:.76rem;border-radius:999px;padding:4px 12px;border:1px solid var(--line);white-space:nowrap}
+.pill.done{color:var(--ok);border-color:rgba(104,206,143,.35)}
+.pill.active{color:var(--warn);border-color:rgba(229,184,94,.35)}
+.pill.todo{color:var(--idle)}
+.hidden{display:none !important}
+
+/* dashboard */
+.dash{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.dash .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+.dash .m{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px}
+.dash .m b{display:block;font-size:1.5rem;color:var(--teal)}
+.dash .m span{font-size:.82rem;color:var(--muted)}
+.bar{height:9px;background:var(--surface-2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--teal));width:0;transition:width .5s}
+.tasks{list-style:none;margin:16px 0 0;padding:0}
+.tasks li{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.tasks li:last-child{border-bottom:0}
+.tasks input{width:19px;height:19px;accent-color:var(--teal);flex:0 0 auto;margin-top:5px}
+.tasks label{cursor:pointer;color:var(--ink)}
+.tasks .who{color:var(--muted);font-size:.78rem;display:block}
+.done-txt{text-decoration:line-through;color:var(--idle)}
+.dashfoot{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;background:var(--gold);color:#171410}
+.btn.ghost{background:var(--surface-2);border:1px solid var(--line);color:var(--ink)}
+.note{color:var(--muted);font-size:.82rem}
+
+/* search dialog */
+dialog{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--ink);padding:0;width:min(92vw,620px);box-shadow:0 30px 70px #000a}
+dialog::backdrop{background:rgba(4,7,11,.72)}
+.dlg-h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.dlg-h input{flex:1;font:inherit;background:#0a1017;border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink)}
+.dlg-h input:focus-visible{outline:3px solid var(--teal)}
+.results{list-style:none;margin:0;padding:8px;max-height:min(60vh,420px);overflow:auto}
+.results li{border-radius:10px}
+.results button{width:100%;text-align:start;font:inherit;background:transparent;border:0;color:var(--ink);padding:11px 13px;border-radius:10px;cursor:pointer}
+.results button:hover,.results button:focus-visible{background:var(--surface-2)}
+.results .k{display:block;font-size:.76rem;color:var(--gold)}
+.results .d{display:block;font-size:.8rem;color:var(--muted)}
+.empty{padding:22px;text-align:center;color:var(--muted);font-size:.9rem}
+
+/* roadmap/ timeline */
+.flow{display:grid;gap:10px}
+.step{display:grid;grid-template-columns:auto 1fr;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.step .dot{width:11px;height:11px;border-radius:50%;margin-top:8px;background:var(--gold)}
+.step .dot.teal{background:var(--teal)} .step .dot.indigo{background:var(--indigo)}
+.step h3{margin:0 0 3px;font-size:.98rem}
+.step p{margin:0;color:var(--muted);font-size:.86rem}
+
+footer{border-top:1px solid var(--line);padding:30px 18px;color:var(--muted);font-size:.86rem;text-align:center}
+footer .wrap{display:grid;gap:8px;justify-items:center}
+
+@media (max-width:760px){
+  .phase{grid-template-columns:auto 1fr;}
+  .phase .pill{grid-column:2;}
+  nav{width:100%;margin-inline-start:0;order:3}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bar i{transition:none}}
+@media print{body{background:#fff;color:#111}body::before{display:none}.topbar{position:static}.card,.phase,.dash{box-shadow:none;background:#fff;border-color:#ccc}.no-print{display:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">پرش به محتوای اصلی</a>
+
+<div class="topbar">
+  <div class="in">
+    <a class="brand" href="#top"><span class="mk" aria-hidden="true">✦</span> PerShiaA</a>
+    <nav aria-label="ناوبری اصلی">
+      <a href="#about">درباره</a>
+      <a href="#pillars">محورها</a>
+      <a href="#mind">نقشه ذهنی</a>
+      <a href="#roadmap">نقشه راه</a>
+      <a href="#dashboard">پیشرفت</a>
+    </nav>
+    <button class="search-btn" id="openSearch" aria-haspopup="dialog">
+      جستجوی سریع <kbd>Ctrl K</kbd>
+    </button>
+  </div>
+</div>
+
+<main id="main">
+  <section id="top" style="border-top:0">
+    <div class="hero">
+      <p class="eyebrow">اندیشکده · تمدن نوین اسلامی</p>
+      <h1>پژوهش مستند برای <em>تمدن نوین اسلامی</em></h1>
+      <p class="lead">
+        ما فاصله‌ی میان دانش و تصمیم را پر می‌کنیم: هر ادعا با منبع، هر تحلیل با سطح اطمینان،
+        و هر توصیه با سناریو و ریسک سنجیده می‌شود. خروجی کار، سند قابل‌استناد است — نه نظر شخصی.
+      </p>
+      <div class="stats">
+        <div class="stat"><b>۶</b><span>محور تخصصی فعال</span></div>
+        <div class="stat"><b>۱۲</b><span>گره مفهومی در نقشه ذهنی</span></div>
+        <div class="stat"><b>۵</b><span>فاز نقشه راه</span></div>
+        <div class="stat"><b>۵۲</b><span>کنترل کیفیت تحلیلی</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <h2><span class="n">۰۱</span> معرفی و مأموریت</h2>
+      <p class="sub">
+        تمدن‌سازی بدون دانش دقیق ممکن نیست. این اندیشکده با چارچوب تحلیلی چندلایه،
+        مسائل راهبردی را از سطح مفهوم تا سطح سیاست‌گذاری رصد و مستند می‌کند.
+      </p>
+      <div class="grid g2">
+        <article class="card">
+          <div class="ico" style="color:var(--gold)">◎</div>
+          <h3>مأموریت</h3>
+          <p>تولید دانش راهبردی قابل‌استناد درباره‌ی مبانی، مسیر و نهادهای تمدن نوین اسلامی،
+          و تبدیل آن به توصیه‌های اجرایی برای تصمیم‌سازان و پژوهشگران.</p>
+        </article>
+        <article class="card">
+          <div class="ico" style="color:var(--teal)">◇</div>
+          <h3>روش کار</h3>
+          <p>سه گام: گردآوری منبع با ثبت شناسه و چک‌سام، تحلیل چندلایه با برچسب اطمینان،
+          و بازبینی مستقل پیش از انتشار. هیچ یافته‌ای بدون رد حسابرسی منتشر نمی‌شود.</p>
+        </article>
+        <article class="card">
+          <div class="ico" style="color:var(--indigo)">◈</div>
+          <h3>اصول</h3>
+          <p>صداقت معرفتی، شفافیت منبع، پذیرش عدم‌قطعیت، و پرهیز از قطعیت کاذب.
+          هر استنباط با برچسب <code>[I]</code> و هر ادعای قطعی با سند پشتیبان می‌آید.</p>
+        </article>
+        <article class="card">
+          <div class="ico" style="color:var(--rose)">◐</div>
+          <h3>مخاطب</h3>
+          <p>پژوهشگران، نهادهای سیاست‌گذار، رسانه‌های تحلیلی و دانشجویانی که به
+          سند مستند و روش شفاف نیاز دارند، نه خلاصه‌ی بی‌منبع.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="pillars">
+    <div class="wrap">
+      <h2><span class="n">۰۲</span> محورهای تخصصی</h2>
+      <p class="sub">هر محور یک برنامه‌ی پژوهشی مستقل با معیارهای پایش مشخص است.</p>
+      <div class="grid g3" id="pillarGrid"></div>
+    </div>
+  </section>
+
+  <section id="mind">
+    <div class="wrap">
+      <h2><span class="n">۰۳</span> نقشه ذهنی تعاملی</h2>
+      <p class="sub">
+        برای جابه‌جایی بین گره‌ها روی هرکدام بزن؛ با کشیدن جابه‌جا شو و با چرخ ماوس بزرگ‌نمایی کن.
+      </p>
+      <div class="mindwrap">
+        <div class="mindtop no-print">
+          <button class="chip" id="mmReset" aria-pressed="false">بازنشانی نما</button>
+          <button class="chip" id="mmFit">جای‌گیری خودکار</button>
+          <span class="hint">گره‌ها بر پایه‌ی محورهای پژوهشی و لایه‌های تحلیلی ساخته شده‌اند.</span>
+        </div>
+        <svg class="mind" id="mind" viewBox="0 0 900 520" role="img" aria-label="نقشه ذهنی محورهای اندیشکده"></svg>
+        <div class="detail" id="mmDetail" aria-live="polite">
+          <b>یک گره را انتخاب کن</b>
+          <p>توضیح گره و ارتباطش با محورهای دیگر اینجا نمایش داده می‌شود.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <div class="wrap">
+      <h2><span class="n">۰۴</span> نقشه راه پروژه</h2>
+      <p class="sub">برای دیدن مراحل در هر وضعیت، فیلترها را انتخاب کن.</p>
+      <div class="filters no-print" role="group" aria-label="فیلتر وضعیت مراحل">
+        <button class="chip" data-f="all" aria-pressed="true">همه</button>
+        <button class="chip" data-f="done" aria-pressed="false">تکمیل‌شده</button>
+        <button class="chip" data-f="active" aria-pressed="false">در جریان</button>
+        <button class="chip" data-f="todo" aria-pressed="false">در انتظار</button>
+      </div>
+      <div id="phaseList"></div>
+      <p class="note" id="phaseCount" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="dashboard">
+    <div class="wrap">
+      <h2><span class="n">۰۵</span> داشبورد پیشرفت</h2>
+      <p class="sub">
+        وضعیت کارها را علامت بزن؛ نتیجه در همین مرورگر ذخیره می‌شود و به هیچ سروری فرستاده نمی‌شود.
+      </p>
+      <div class="dash">
+        <div class="row">
+          <div class="m"><b id="dDone">۰</b><span>کار انجام‌شده</span></div>
+          <div class="m"><b id="dTotal">۰</b><span>کار کل</span></div>
+          <div class="m"><b id="dPct">۰٪</b><span>پیشرفت</span></div>
+          <div class="m"><b id="dSaved">—</b><span>آخرین ذخیره</span></div>
+        </div>
+        <div class="bar" role="progressbar" aria-labelledby="dashBarLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="dashBar"><i></i></div>
+        <span class="note" id="dashBarLabel">میزان پیشرفت محلی پروژه</span>
+        <ul class="tasks" id="taskList"></ul>
+        <div class="dashfoot no-print">
+          <button class="btn ghost" id="dReset">پاک‌کردن داده‌ی محلی</button>
+          <button class="btn ghost" id="dExport">دریافت گزارش JSON</button>
+          <span class="note">ذخیره‌سازی محلی (localStorage) — بدون ارسال به بیرون.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="path">
+    <div class="wrap">
+      <h2><span class="n">۰۶</span> مسیر توسعه</h2>
+      <p class="sub">ترتیب کارها طوری چیده شده که هر گام، گام بعدی را ممکن کند.</p>
+      <div class="flow" id="flowList"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>اندیشکده تمدن نوین اسلامی — PerShiaA</p>
+    <p>منتشرشده روی GitHub Pages · محتوای این صفحه آفلاین و بدون وابستگی سروری کار می‌کند.</p>
+    <p><a href="sitemap.xml">نقشه سایت</a> · <a href="robots.txt">robots.txt</a></p>
+  </div>
+</footer>
+
+<dialog id="searchDlg" aria-label="جستجوی سریع">
+  <div class="dlg-h">
+    <input id="searchInput" type="search" placeholder="جست‌وجو در محورها، مراحل و مفاهیم…" autocomplete="off" aria-label="عبارت جست‌وجو">
+    <button class="chip" id="closeSearch">بستن</button>
+  </div>
+  <ul class="results" id="searchResults" aria-live="polite"></ul>
+</dialog>
+
+<script>
+/* ═══════════ داده‌ی سایت (آفلاین، درون صفحه) ═══════════ */
+const PILLARS = [
+  {id:"p1",icon:"◈",c:"var(--gold)",title:"مبانی و معرفت‌شناسی تمدنی",desc:"تعریف تمدن، نسبت دین و علم، و معیارهای سنجش پیشرفت تمدنی.",tags:["فلسفه","معرفت‌شناسی","مفهوم‌پردازی"]},
+  {id:"p2",icon:"◇",c:"var(--teal)",title:"نهادها و حکمرانی",desc:"ساختار نهادهای علمی، الگوهای حکمرانی و مسیر تصمیم‌سازی.",tags:["حکمرانی","سیاست‌گذاری","نهاد"]},
+  {id:"p3",icon:"◉",c:"var(--indigo)",title:"علم، فناوری و نوآوری",desc:"چرخه‌ی تولید دانش، نظام نوآوری و انتقال فناوری.",tags:["علم","فناوری","نوآوری"]},
+  {id:"p4",icon:"◐",c:"var(--rose)",title:"رسانه، روایت و افکار عمومی",desc:"ساخت روایت، سواد رسانه‌ای و مدیریت پیام در فضای دیجیتال.",tags:["رسانه","روایت","افکار عمومی"]},
+  {id:"p5",icon:"◆",c:"var(--gold)",title:"اقتصاد و عدالت",desc:"الگوهای اقتصاد مقاومتی، عدالت توزیعی و پایداری مالی.",tags:["اقتصاد","عدالت","توسعه"]},
+  {id:"p6",icon:"◍",c:"var(--teal)",title:"فرهنگ، خانواده و هویت",desc:"تحولات فرهنگی، سیاست خانواده و بازتولید هویت جمعی.",tags:["فرهنگ","خانواده","هویت"]}
+];
+
+const MIND = {
+  nodes:[
+    {id:"core",label:"تمدن نوین اسلامی",kind:"root",x:450,y:250,r:44,
+     d:"گره‌ی مرکزی: منظومه‌ای از نهادها، دانش و ارزش‌ها که در پیوند با هم معنا پیدا می‌کند."},
+    {id:"p1",label:"مبانی معرفتی",kind:"pillar",x:200,y:90,r:30,d:"پایه‌ی مفهومی؛ بدون آن، سنجش پیشرفت بی‌معنا می‌شود."},
+    {id:"p2",label:"نهاد و حکمرانی",kind:"pillar",x:450,y:60,r:30,d:"ساختارهایی که تصمیم را به اجرا تبدیل می‌کنند."},
+    {id:"p3",label:"علم و فناوری",kind:"pillar",x:700,y:90,r:30,d:"موتور رشد؛ کیفیت آن سرعت تمدن‌سازی را تعیین می‌کند."},
+    {id:"p4",label:"رسانه و روایت",kind:"pillar",x:770,y:250,r:30,d:"کانال شکل‌گیری ادراک جمعی و مشروعیت."},
+    {id:"p5",label:"اقتصاد و عدالت",kind:"pillar",x:700,y:410,r:30,d:"شرط پایداری؛ بدون آن، پیشرفت شکننده است."},
+    {id:"p6",label:"فرهنگ و هویت",kind:"pillar",x:450,y:440,r:30,d:"حافظ تداوم معنا و انگیزه‌ی نسل‌ها."},
+    {id:"p7",label:"خانواده",kind:"sub",x:200,y:410,r:22,d:"کوچک‌ترین نهاد تمدن‌ساز و نخستین محیط تربیت."},
+    {id:"p8",label:"سواد رسانه‌ای",kind:"sub",x:640,y:170,r:20,d:"توان تشخیص روایت از واقعیت؛ پیش‌شرط گفت‌وگوی سالم."},
+    {id:"p9",label:"نظام نوآوری",kind:"sub",x:640,y:330,r:20,d:"پیوند دانشگاه، صناعت و سرمایه در یک زنجیره."},
+    {id:"p10",label:"عدالت توزیعی",kind:"sub",x:260,y:300,r:20,d:"سنجش اثر سیاست‌ها بر توزیع فرصت و ثروت."},
+    {id:"p11",label:"سیاست‌گذاری مستند",kind:"method",x:450,y:250,r:0,d:""}
+  ],
+  links:[
+    ["core","p1"],["core","p2"],["core","p3"],["core","p4"],["core","p5"],["core","p6"],
+    ["p1","p10"],["p4","p8"],["p3","p9"],["p6","p7"],["p5","p10"],["p2","p9"],
+    ["p1","p6"],["p3","p4"],["p2","p5"]
+  ]
+};
+
+const PHASES = [
+  {id:"ph1",n:"۰۱",title:"تدوین چارچوب تحلیلی",state:"done",desc:"تعریف لایه‌های تحلیل، برچسب‌های اطمینان و قالب سند پرونده."},
+  {id:"ph2",n:"۰۲",title:"ساخت پیکره‌ی منبع",state:"done",desc:"گردآوری اسناد پایه با شناسه، چک‌سام و یادداشت مجوز."},
+  {id:"ph3",n:"۰۳",title:"نقشه ذهنی و جستجو",state:"active",desc:"پیوند مفاهیم، جستجوی سریع و مسیرهای ناوبری در سایت."},
+  {id:"ph4",n:"۰۴",title:"نقشه راه و پایش پیشرفت",state:"active",desc:"فیلتر وضعیت مراحل و داشبورد محلی پیگیری کارها."},
+  {id:"ph5",n:"۰۵",title:"انتشار و سئو",state:"todo",desc:"انتشار روی GitHub Pages با robots.txt، sitemap و متادیتای اشتراک‌گذاری."},
+  {id:"ph6",n:"۰۶",title:"اتصال به موتور تحلیلی",state:"todo",desc:"تولید خودکار پرونده از پیکره و به‌روزرسانی نقشه‌ی مفاهیم."}
+];
+
+const FLOW = [
+  {c:"var(--gold)",t:"صورت‌بندی پرسش راهبردی",d:"تبدیل مسئله‌ی مبهم به پرسش قابل‌پاسخ با دامنه‌ی روشن."},
+  {c:"var(--teal)",t:"گردآوری منبع و ثبت آن",d:"هر سند با شناسه، چک‌سام و یادداشت مجوز در دفتر منابع ثبت می‌شود."},
+  {c:"var(--indigo)",t:"تحلیل چندلایه",d:"ساختار، ذی‌نفعان، سناریو، فرضیه‌های رقیب و ماتریس ریسک."},
+  {c:"var(--rose)",t:"بازبینی مستقل",d:"نقد درونی: آیا برچسب‌ها صادقانه‌اند؟ آیا استنباط به‌جای سند جا نزده؟"},
+  {c:"var(--gold)",t:"انتشار سند",d:"خروجی نهایی با محدودیت‌ها، فرض‌ها و مهر یکپارچگی."}
+];
+
+const TASKS = [
+  {id:"t1",t:"تکمیل پیکره‌ی اسناد پایه",w:"پژوهش"},
+  {id:"t2",t:"بازبینی برچسب‌های اطمینان",w:"بازبینی"},
+  {id:"t3",t:"افزودن سناریوهای بلندمدت",w:"تحلیل"},
+  {id:"t4",t:"نهایی‌سازی نقشه ذهنی",w:"محصول"},
+  {id:"t5",t:"انتشار نسخه‌ی اول روی Pages",w:"انتشار"},
+  {id:"t6",t:"اتصال داشبورد به خروجی موتور",w:"مهندسی"}
+];
+
+const INDEX = [];
+PILLARS.forEach(p=>INDEX.push({k:"محور",t:p.title,d:p.desc,href:"#pillars"}));
+PHASES.forEach(p=>INDEX.push({k:"مرحله",t:p.title,d:p.desc,href:"#roadmap"}));
+FLOW.forEach(f=>INDEX.push({k:"مسیر",t:f.t,d:f.d,href:"#path"}));
+MIND.nodes.filter(n=>n.r>0).forEach(n=>INDEX.push({k:"مفهوم",t:n.label,d:n.d,href:"#mind"}));
+INDEX.push({k:"بخش",t:"داشبورد پیشرفت",d:"پیگیری محلی وضعیت کارها با ذخیره‌سازی مرورگر.",href:"#dashboard"});
+INDEX.push({k:"بخش",t:"معرفی و مأموریت",d:"مأموریت، روش کار و اصول اندیشکده.",href:"#about"});
+
+/* ═══════════ ابزارها ═══════════ */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const esc = v => String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const faNum = n => String(n).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
+
+/* ═══════════ محورها ═══════════ */
+$("#pillarGrid").innerHTML = PILLARS.map(p=>`
+  <article class="card" id="${p.id}">
+    <div class="ico" style="color:${p.c}">${p.icon}</div>
+    <h3>${esc(p.title)}</h3>
+    <p>${esc(p.desc)}</p>
+    <div class="tags">${p.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+  </article>`).join("");
+
+/* ═══════════ نقشه ذهنی ═══════════ */
+(function mind(){
+  const svg = $("#mind"), NS = "http://www.w3.org/2000/svg";
+  const COLORS = {root:"var(--gold)",pillar:"var(--teal)",sub:"var(--indigo)",method:"var(--gold)"};
+  const byId = Object.fromEntries(MIND.nodes.map(n=>[n.id,n]));
+  let view = {x:0,y:0,k:1};
+
+  const gRoot = document.createElementNS(NS,"g");
+  const gLink = document.createElementNS(NS,"g");
+  const gNode = document.createElementNS(NS,"g");
+  gRoot.append(gLink,gNode); svg.append(gRoot);
+
+  MIND.links.forEach(([a,b])=>{
+    const A = byId[a], B = byId[b];
+    const l = document.createElementNS(NS,"line");
+    l.setAttribute("x1",A.x); l.setAttribute("y1",A.y);
+    l.setAttribute("x2",B.x); l.setAttribute("y2",B.y);
+    l.setAttribute("class","lnk"); l.dataset.a=a; l.dataset.b=b;
+    gLink.append(l);
+  });
+
+  const nodeEls = {};
+  MIND.nodes.filter(n=>n.r>0).forEach(n=>{
+    const g = document.createElementNS(NS,"g");
+    g.setAttribute("class","nd"); g.dataset.id = n.id;
+    g.setAttribute("tabindex","0");
+    g.setAttribute("role","button");
+    g.setAttribute("aria-label", n.label);
+    const c = document.createElementNS(NS,"circle");
+    c.setAttribute("cx",n.x); c.setAttribute("cy",n.y); c.setAttribute("r",n.r);
+    c.setAttribute("fill","var(--surface-2)");
+    c.setAttribute("stroke",COLORS[n.kind]||"var(--teal)");
+    c.setAttribute("stroke-width","2");
+    const t = document.createElementNS(NS,"text");
+    t.setAttribute("x",n.x); t.setAttribute("y",n.y + n.r + 16);
+    t.setAttribute("text-anchor","middle"); t.textContent = n.label;
+    g.append(c,t); gNode.append(g); nodeEls[n.id] = g;
+  });
+
+  function applyView(){
+    gRoot.setAttribute("transform",`translate(${view.x} ${view.y}) scale(${view.k})`);
+  }
+  function fit(){
+    const b = gNode.getBBox();
+    const pad = 34;
+    const k = Math.min((900 - pad*2)/b.width, (520 - pad*2)/b.height, 1.35);
+    view.k = k;
+    view.x = 450 - (b.x + b.width/2)*k;
+    view.y = 260 - (b.y + b.height/2)*k;
+    applyView();
+  }
+
+  function select(id){
+    const n = byId[id];
+    if(!n) return;
+    const near = new Set([id]);
+    MIND.links.forEach(([a,b])=>{ if(a===id) near.add(b); if(b===id) near.add(a); });
+    Object.entries(nodeEls).forEach(([nid,el])=>el.classList.toggle("dim", !near.has(nid)));
+    $$(".lnk",gLink).forEach(l=>l.classList.toggle("dim", l.dataset.a!==id && l.dataset.b!==id));
+    const rel = [...near].filter(x=>x!==id).map(x=>byId[x]?.label).filter(Boolean);
+    $("#mmDetail").innerHTML = `<b>${esc(n.label)}</b>
+      <p>${esc(n.d)}</p>
+      <p class="note">پیوندهای مستقیم: ${rel.length? esc(rel.join("، ")) : "—"}</p>`;
+  }
+  function clearSelect(){
+    Object.values(nodeEls).forEach(el=>el.classList.remove("dim"));
+    $$(".lnk",gLink).forEach(l=>l.classList.remove("dim"));
+    $("#mmDetail").innerHTML = "<b>یک گره را انتخاب کن</b><p>توضیح گره و ارتباطش با محورهای دیگر اینجا نمایش داده می‌شود.</p>";
+  }
+
+  gNode.addEventListener("click", e=>{
+    const g = e.target.closest(".nd");
+    if(g) select(g.dataset.id);
+  });
+  gNode.addEventListener("keydown", e=>{
+    const g = e.target.closest(".nd");
+    if(!g) return;
+    if(e.key==="Enter" || e.key===" "){ e.preventDefault(); select(g.dataset.id); }
+  });
+
+  let drag = null;
+  svg.addEventListener("pointerdown", e=>{
+    drag = {x:e.clientX,y:e.clientY,ox:view.x,oy:view.y};
+    svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener("pointermove", e=>{
+    if(!drag) return;
+    const rect = svg.getBoundingClientRect();
+    const sx = 900/rect.width, sy = 520/rect.height;
+    view.x = drag.ox + (e.clientX-drag.x)*sx;
+    view.y = drag.oy + (e.clientY-drag.y)*sy;
+    applyView();
+  });
+  const end = ()=>drag=null;
+  svg.addEventListener("pointerup", end);
+  svg.addEventListener("pointercancel", end);
+  svg.addEventListener("wheel", e=>{
+    e.preventDefault();
+    const next = Math.min(2.4, Math.max(.5, view.k * (e.deltaY < 0 ? 1.12 : .89)));
+    view.k = next; applyView();
+  }, {passive:false});
+
+  $("#mmFit").onclick = fit;
+  $("#mmReset").onclick = ()=>{ fit(); clearSelect(); };
+  fit();
+  clearSelect();
+})();
+
+/* ═══════════ نقشه راه ═══════════ */
+const STATE_FA = {done:"تکمیل‌شده",active:"در جریان",todo:"در انتظار"};
+function paintPhases(filter){
+  const list = PHASES.filter(p=>filter==="all" || p.state===filter);
+  $("#phaseList").innerHTML = list.length ? list.map(p=>`
+    <article class="phase" data-state="${p.state}">
+      <span class="idx">${esc(p.n)}</span>
+      <div><h3>${esc(p.title)}</h3><p>${esc(p.desc)}</p></div>
+      <span class="pill ${p.state}">${STATE_FA[p.state]}</span>
+    </article>`).join("") : '<p class="empty">مرحله‌ای با این وضعیت وجود ندارد.</p>';
+  $("#phaseCount").textContent = `${faNum(list.length)} مرحله از ${faNum(PHASES.length)} مرحله نمایش داده شد.`;
+}
+$$(".filters .chip").forEach(btn=>btn.onclick = ()=>{
+  $$(".filters .chip").forEach(b=>b.setAttribute("aria-pressed", String(b===btn)));
+  paintPhases(btn.dataset.f);
+});
+paintPhases("all");
+
+/* ═══════════ مسیر توسعه ═══════════ */
+$("#flowList").innerHTML = FLOW.map(f=>`
+  <div class="step"><span class="dot" style="background:${f.c}"></span>
+    <div><h3>${esc(f.t)}</h3><p>${esc(f.d)}</p></div></div>`).join("");
+
+/* ═══════════ داشبورد محلی ═══════════ */
+const KEY = "pershiaa.progress.v1";
+function load(){
+  try{ const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : {}; }
+  catch{ return {}; }
+}
+function save(state){
+  try{
+    localStorage.setItem(KEY, JSON.stringify({...state, savedAt:new Date().toISOString()}));
+    return true;
+  }catch{ return false; }
+}
+let state = load();
+
+$("#taskList").innerHTML = TASKS.map(t=>`
+  <li><input type="checkbox" id="c-${t.id}" data-id="${t.id}" ${state[t.id]?"checked":""}>
+    <label for="c-${t.id}"><span class="t">${esc(t.t)}</span><span class="who">${esc(t.w)}</span></label>
+  </li>`).join("");
+
+function refresh(){
+  const done = TASKS.filter(t=>state[t.id]).length;
+  const pct = Math.round(done/TASKS.length*100);
+  $("#dDone").textContent = faNum(done);
+  $("#dTotal").textContent = faNum(TASKS.length);
+  $("#dPct").textContent = faNum(pct) + "٪";
+  $("#dSaved").textContent = state.savedAt
+    ? new Date(state.savedAt).toLocaleTimeString("fa-IR",{hour:"2-digit",minute:"2-digit"})
+    : "—";
+  const bar = $("#dashBar");
+  bar.querySelector("i").style.width = pct + "%";
+  bar.setAttribute("aria-valuenow", String(pct));
+  $$("#taskList input").forEach(cb=>{
+    const lbl = cb.closest("li").querySelector(".t");
+    lbl.classList.toggle("done-txt", cb.checked);
+  });
+}
+$("#taskList").addEventListener("change", e=>{
+  const cb = e.target.closest("input[type=checkbox]");
+  if(!cb) return;
+  state[cb.dataset.id] = cb.checked;
+  if(save(state)) refresh();
+});
+$("#dReset").onclick = ()=>{
+  state = {};
+  $$("#taskList input").forEach(cb=>cb.checked=false);
+  try{ localStorage.removeItem(KEY); }catch{}
+  refresh();
+};
+$("#dExport").onclick = ()=>{
+  const payload = {project:"PerShiaA",exportedAt:new Date().toISOString(),
+    tasks:TASKS.map(t=>({id:t.id,title:t.t,owner:t.w,done:!!state[t.id]}))};
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}));
+  a.download = "pershiaa-progress.json"; a.click(); URL.revokeObjectURL(a.href);
+};
+refresh();
+
+/* ═══════════ جستجوی سریع ═══════════ */
+const dlg = $("#searchDlg"), input = $("#searchInput"), results = $("#searchResults");
+function runSearch(q){
+  const term = q.trim().toLowerCase();
+  const hits = term
+    ? INDEX.filter(i=>(i.t+" "+i.d+" "+i.k).toLowerCase().includes(term))
+    : INDEX.slice(0,8);
+  results.innerHTML = hits.length
+    ? hits.map(i=>`<li><button data-href="${esc(i.href)}">
+        <span class="k">${esc(i.k)}</span>${esc(i.t)}<span class="d">${esc(i.d)}</span></button></li>`).join("")
+    : '<li class="empty">نتیجه‌ای پیدا نشد. عبارت دیگری را امتحان کن.</li>';
+}
+results.addEventListener("click", e=>{
+  const b = e.target.closest("button[data-href]");
+  if(!b) return;
+  dlg.close();
+  document.querySelector(b.dataset.href)?.scrollIntoView({behavior:"smooth",block:"start"});
+});
+input.addEventListener("input", ()=>runSearch(input.value));
+$("#openSearch").onclick = ()=>{ runSearch(""); dlg.showModal(); input.focus(); };
+$("#closeSearch").onclick = ()=>dlg.close();
+document.addEventListener("keydown", e=>{
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); runSearch(""); dlg.showModal(); input.focus(); }
+  if(e.key==="Escape" && dlg.open) dlg.close();
+});
+</script>
+</body>
+</html>

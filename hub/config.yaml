@@ -1,0 +1,51 @@
+# پیکربندی هماهنگ‌ساز کلان PerShiaA
+# اگر PyYAML نصب نباشد، مقادیر پیش‌فرض درون core.py استفاده می‌شوند.
+
+network:
+  name: PerShiaA-Network
+  version: "1.0.0"
+
+services:
+  doctrine:
+    url: http://doctrine:8001
+    local: http://127.0.0.1:8001
+    health: /api/health
+    analyze: /api/analyze
+  osint:
+    url: http://osint:8002
+    local: http://127.0.0.1:8002
+    health: /api/health
+    scan: /api/scan
+  web:
+    url: http://web:80
+    local: http://127.0.0.1:8080
+
+intents:
+  osint:
+    keywords: [osint, اطلاعات, تهدید, دامنه, ایمیل, نشت, شناسایی, reconnaissance]
+    pipeline: [osint, doctrine]
+  doctrine:
+    keywords: [دکترین, تحلیل, پرونده, ارزیابی, سناریو, اندیشکده]
+    pipeline: [doctrine]
+  content:
+    keywords: [محتوا, پادکست, مقاله, کاروسل, کلیپ, یوتیوب, تولید]
+    pipeline: [doctrine, content]
+  download:
+    keywords: [دانلود, تلگرام, فایل, pdf, ویدیو, آرشیو]
+    pipeline: [telegram]
+  publish:
+    keywords: [انتشار, کانال, ارسال, تلگرام, ایتا, بله, پیام]
+    pipeline: [publish]
+
+defaults:
+  timeout_seconds: 30
+  max_retries: 2
+  partial_success: true
+  offline_mode: true
+
+paths:
+  data_dir: ./data
+  corpus_dir: ./data/corpus
+  dossiers_dir: ./data/dossiers
+  downloads_dir: ./downloads
+  logs_dir: ./data/logs

@@ -1,0 +1,63 @@
+name: OSINT Scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "دامنه یا نام کاربری عمومی (فقط دارایی مجاز)"
+        required: true
+        type: string
+      modules:
+        description: "ماژول‌ها با کاما: dns,github"
+        required: false
+        default: "dns"
+        type: string
+      authorize:
+        description: "تأیید می‌کنم این هدف تحت مجوز من است"
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: تحلیل منابع عمومی
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: بررسی مجوز
+        run: |
+          if [ "${{ inputs.authorize }}" != "true" ]; then
+            echo "::error::اجرای اسکن بدون تأیید مجوز مجاز نیست."
+            exit 1
+          fi
+
+      - name: دریافت مخزن
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: خودآزمایی موتور OSINT
+        working-directory: osint
+        run: python3 osint_engine.py --selftest
+
+      - name: اجرای اسکن
+        env:
+          TARGET: ${{ inputs.target }}
+          MODULES: ${{ inputs.modules }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/logs/osint
+          python3 osint/osint_engine.py --target "$TARGET" --modules "$MODULES" \
+            --json --out data/logs/osint/scan.json
+
+      - name: بارگذاری خروجی
+        uses: actions/upload-artifact@v4
+        with:
+          name: osint-scan
+          path: data/logs/osint/scan.json
+          retention-days: 30

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d1219">
+<title>هاب یکپارچه PerShiaA | داشبورد مرکزی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1219;--panel:#141d28;--panel2:#1b2836;--ink:#e8eef6;--muted:#93a3b4;--gold:#d4b15b;--teal:#59cfbe;--indigo:#7c8cf8;--line:#26313f;--ok:#6fce8f;--warn:#e5b85e;--err:#ef7a79;--r:14px}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 12% -8%,#1e2a3a 0,transparent 46%),var(--bg);color:var(--ink);font:16px/1.85 "Vazirmatn",system-ui,"Segoe UI","Tahoma",Arial,sans-serif}
+/* اگر فونت Vazirmatn آفلاین/بلاک باشد، system-ui/Tahoma جایگزین می‌شود (font-display:swap در گوگل‌فونت). */
+header{padding:26px max(20px,calc((100vw - 1180px)/2));border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:clamp(24px,3vw,36px);color:var(--gold)}
+header p{margin:4px 0 0;color:var(--muted);font-size:15px}
+main{max-width:1180px;margin:28px auto;padding:0 20px}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr);gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 14px 34px #0003}
+h2{font-size:20px;margin:0 0 12px;color:var(--gold)}
+label{display:block;font-weight:700;margin-bottom:8px}
+textarea{width:100%;min-height:150px;font:inherit;color:var(--ink);background:#0a1017;border:1px solid var(--line);border-radius:11px;padding:12px;resize:vertical}
+textarea:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.row{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 17px;cursor:pointer;background:var(--gold);color:#171410}
+button.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--ink)}
+button:disabled{opacity:.55;cursor:progress}
+button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:4px 11px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);margin:0 0 8px 6px}
+.stage{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:9px;background:#101a24;display:flex;gap:11px;align-items:flex-start}
+.dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;margin-top:8px}
+.dot.ok{background:var(--ok)}.dot.error{background:var(--err)}.dot.skipped{background:var(--muted)}.dot.pending{background:var(--warn)}
+.stage strong{color:var(--ink)}
+.stage small{display:block;color:var(--muted);margin-top:2px}
+.metric{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px dashed var(--line)}
+.metric:last-child{border-bottom:0}
+.metric b{color:var(--teal);font-size:20px}
+pre{background:#0a1017;border-radius:10px;padding:13px;max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;color:#bcd3e6}
+.hint{color:var(--muted);font-size:14px}
+.err{color:var(--err)}
+.map{width:100%;height:auto;display:block;border-radius:11px;background:#0a1017;border:1px solid var(--line)}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+@media print{body{background:#fff;color:#111}.panel,.stage{background:#fff;box-shadow:none}.no-print{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>هاب یکپارچه PerShiaA</h1>
+    <p>هماهنگ‌ساز کلان شبکه — تشخیص نیت، اجرای چندمرحله‌ای، تحمل خرابی جزئی</p>
+  </div>
+  <span class="chip">نسخه ۱.۰ · stdlib · آفلاین-اول</span>
+</header>
+
+<main>
+  <div class="grid">
+    <section class="panel">
+      <h2>اجرای گردش کار</h2>
+      <label for="request">درخواست کاربر</label>
+      <textarea id="request" placeholder="مثال: یک تحلیل OSINT از دامنه example.com بگیر، در دکترین ثبت کن و چهار قاب محتوا بساز."></textarea>
+      <div class="row no-print">
+        <button id="run">اجرای گردش کار</button>
+        <button class="ghost" id="plan">اجرای کامل + نمایش نقشه</button>
+        <button class="ghost" id="demo">نمونه</button>
+        <button class="ghost" id="export" disabled>ذخیره‌ی نتیجه</button>
+      </div>
+      <!-- توجه: دکمه‌ی «اجرای کامل + نمایش نقشه» عمداً همان POST /api/run را صدا می‌زند؛
+           بک‌اند فعلاً dry_run ندارد پس برچسب «فقط نقشه» گمراه‌کننده بود و اصلاح شد. -->
+      <p id="status" class="hint" aria-live="polite"></p>
+      <div id="stages"></div>
+      <div id="payload"></div>
+    </section>
+
+    <aside class="panel">
+      <h2>وضعیت شبکه</h2>
+      <div class="metric"><span>سرویس هاب</span><b id="hub-health">…</b></div>
+      <div class="metric"><span>موتور دکترین</span><b id="doc-health">…</b></div>
+      <div class="metric"><span>موتور OSINT</span><b id="osint-health">…</b></div>
+      <div class="metric"><span>سرویس‌های تعریف‌شده</span><b id="svc-count">…</b></div>
+      <div class="metric"><span>گام‌های ممکن</span><b id="steps-count">۵</b></div>
+
+      <h2 style="margin-top:20px">نقشه‌ی اتصال</h2>
+      <svg class="map" viewBox="0 0 320 250" role="img" aria-label="نقشه‌ی اتصال سرویس‌های شبکه">
+        <defs>
+          <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L0,5 L7,2.5 z" fill="#4b5b6d"/>
+          </marker>
+        </defs>
+        <line x1="160" y1="125" x2="80" y2="46" stroke="#4b5b6d" stroke-width="1.2" marker-end="url(#a)"/>
+        <line x1="160" y1="125" x2="242" y2="46" stroke="#4b5b6d" stroke-width="1.2" marker-end="url(#a)"/>
+        <line x1="160" y1="125" x2="80" y2="205" stroke="#4b5b6d" stroke-width="1.2" marker-end="url(#a)"/>
+        <line x1="160" y1="125" x2="242" y2="205" stroke="#4b5b6d" stroke-width="1.2" marker-end="url(#a)"/>
+        <circle cx="160" cy="125" r="34" fill="#1e2b1c" stroke="#d4b15b" stroke-width="1.6"/>
+        <text x="160" y="122" text-anchor="middle" fill="#e8eef6" font-size="11" font-weight="700">هاب</text>
+        <text x="160" y="136" text-anchor="middle" fill="#93a3b4" font-size="9">Orchestrator</text>
+        <rect x="24" y="24" width="112" height="42" rx="10" fill="#16202b" stroke="#d4b15b"/>
+        <text x="80" y="50" text-anchor="middle" fill="#e8eef6" font-size="10">دکترین</text>
+        <rect x="186" y="24" width="112" height="42" rx="10" fill="#16202b" stroke="#ef7a79"/>
+        <text x="242" y="50" text-anchor="middle" fill="#e8eef6" font-size="10">OSINT</text>
+        <rect x="24" y="184" width="112" height="42" rx="10" fill="#16202b" stroke="#7c8cf8"/>
+        <text x="80" y="210" text-anchor="middle" fill="#e8eef6" font-size="10">محتوا</text>
+        <rect x="186" y="184" width="112" height="42" rx="10" fill="#16202b" stroke="#59cfbe"/>
+        <text x="242" y="210" text-anchor="middle" fill="#e8eef6" font-size="10">انتشار</text>
+      </svg>
+      <p class="hint" style="margin-top:12px">اگر API سرویس‌ها بالا نباشند، هاب همان منطق را درون‌فرآیندی اجرا می‌کند.</p>
+    </aside>
+  </div>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+let lastRun = null;
+
+/* آدرس سرویس‌ها از GET /api/config خوانده می‌شود؛ مقادیر زیر فقط fallback محلی‌اند.
+   برای دیپلوی، config هاب (hub/config.yaml|json) را عوض کن نه این فایل را. */
+const FALLBACK_SERVICES = {
+  hub: '/api/health',
+  doctrine: '/api/health',
+  osint: '/api/health',
+};
+let SERVICE_URLS = { ...FALLBACK_SERVICES };
+
+function resolveHealth(base, healthPath) {
+  if (!base) return null;
+  // base مطلق (http://host:port) یا نسبی ('' یعنی همان origin)
+  if (base.startsWith('http')) return base.replace(/\/$/, '') + (healthPath || '/api/health');
+  return (healthPath || '/api/health');
+}
+
+async function loadConfig() {
+  try {
+    const r = await fetch('/api/config', { cache: 'no-store' });
+    if (!r.ok) throw new Error('bad config');
+    const cfg = await r.json();
+    const svcs = cfg.services || {};
+    const fa = n => String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+    const names = Object.keys(svcs);
+    if (names.length) $('#svc-count').textContent = fa(names.length);
+    else $('#svc-count').textContent = fa(Object.keys(FALLBACK_SERVICES).length);
+    // تعداد گام‌های ممکن = اجتماع pipeline همه‌ی intentها
+    try {
+      const pipes = new Set();
+      Object.values(cfg.intents || {}).forEach(it => (it.pipeline || []).forEach(s => pipes.add(s)));
+      if (pipes.size) $('#steps-count').textContent = fa(pipes.size);
+    } catch {}
+    // URL سلامت هر سرویس: اگر همان هاست سِرو می‌کند از origin نسبی استفاده کن،
+    // وگرنه آدرس config (قابل تنظیم برای دیپلوی) را مبنا بگذار.
+    const pick = (name, fb) => {
+      const s = svcs[name] || {};
+      const base = s.local || s.url || '';
+      const hp = s.health || '/api/health';
+      if (!base) return fb;
+      // اگر base هم‌خانواده‌ی همین origin است، مسیر نسبی کافی است
+      try {
+        const u = new URL(base, location.origin);
+        if (u.origin === location.origin) return hp;
+        return u.origin + hp;
+      } catch { return fb; }
+    };
+    SERVICE_URLS = {
+      hub: '/api/health',
+      doctrine: pick('doctrine', FALLBACK_SERVICES.doctrine),
+      osint: pick('osint', FALLBACK_SERVICES.osint),
+    };
+    return cfg;
+  } catch {
+    $('#svc-count').textContent = '۳';
+    return null;
+  }
+}
+
+async function probe(el, url) {
+  try {
+    const r = await fetch(url, { cache: 'no-store' });
+    const j = await r.json();
+    el.textContent = j.ok ? 'فعال' : 'پاسخ نامعتبر';
+    el.style.color = j.ok ? 'var(--ok)' : 'var(--warn)';
+  } catch {
+    el.textContent = 'وصل نیست';
+    el.style.color = 'var(--err)';
+  }
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function paint(report) {
+  const s = report.summary;
+  $('#status').className = 'hint';
+  $('#status').textContent =
+    `وضعیت ${s.status} · ${s.ok} موفق / ${s.error} خطا / ${s.skipped} رد‌شده · نیت‌ها: ${report.plan.intents.join('، ')}`;
+  $('#stages').innerHTML = report.stages.map(r => `
+    <div class="stage">
+      <span class="dot ${esc(r.status)}"></span>
+      <div>
+        <strong>${r.order}. ${esc(r.stage)}</strong>
+        <small>${esc(r.detail)} · ${r.duration_ms}ms</small>
+      </div>
+    </div>`).join('');
+  $('#payload').innerHTML = `
+    <h2 style="margin-top:18px">خروجی فنی</h2>
+    <pre>${esc(JSON.stringify({
+      run_id: report.run_id,
+      dossier_id: report.dossier_id,
+      confidence_score: report.confidence_score,
+      content_frames: report.content_frames,
+      plan: report.plan,
+    }, null, 2))}</pre>`;
+}
+
+$('#demo').onclick = () => {
+  $('#request').value = 'یک تحلیل OSINT از دامنه example.com بگیر، یافته‌ها را در دکترین ثبت کن و چهار قاب محتوا برای انتشار بساز.';
+};
+
+$('#run').onclick = async () => {
+  const request = $('#request').value.trim();
+  if (!request) { $('#status').textContent = 'اول درخواست را بنویس.'; return; }
+  $('#status').textContent = 'در حال اجرای گردش کار…';
+  $('#run').disabled = true;
+  try {
+    const r = await fetch('/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'خطای سرویس');
+    lastRun = j;
+    $('#export').disabled = false;
+    paint(j);
+  } catch (e) {
+    $('#status').className = 'hint err';
+    $('#status').textContent = 'اجرا ناموفق بود. هاب را با python3 hub/core.py --serve اجرا کن.';
+  } finally {
+    $('#run').disabled = false;
+  }
+};
+
+$('#plan').onclick = async () => {
+  const request = $('#request').value.trim();
+  if (!request) return;
+  try {
+    const r = await fetch('/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request }),
+    });
+    const j = await r.json();
+    $('#payload').innerHTML = `<h2 style="margin-top:18px">نقشه‌ی اجرا (پس از اجرای کامل)</h2><pre>${esc(JSON.stringify(j.plan, null, 2))}</pre>`;
+  } catch {
+    $('#payload').innerHTML = '<p class="hint err">دریافت نقشه ناموفق بود.</p>';
+  }
+};
+
+$('#export').onclick = () => {
+  if (!lastRun) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(lastRun, null, 2)], { type: 'application/json' }));
+  a.download = `${lastRun.run_id}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+probe($('#hub-health'), SERVICE_URLS.hub);
+probe($('#doc-health'), SERVICE_URLS.doctrine);
+probe($('#osint-health'), SERVICE_URLS.osint);
+loadConfig().then(() => {
+  probe($('#hub-health'), SERVICE_URLS.hub);
+  probe($('#doc-health'), SERVICE_URLS.doctrine);
+  probe($('#osint-health'), SERVICE_URLS.osint);
+});
+</script>
+</body>
+</html>

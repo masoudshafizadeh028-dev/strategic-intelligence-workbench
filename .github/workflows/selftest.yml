@@ -1,0 +1,45 @@
+name: Network Selftest
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    name: خودآزمایی کل شبکه
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: دریافت مخزن
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: نصب Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: نصب ابزارهای اختیاری OCR
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-fas poppler-utils || true
+
+      - name: اجرای خودآزمایی شبکه
+        run: python3 scripts/selftest_all.py --json | tee selftest-report.json
+
+      - name: بارگذاری گزارش
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selftest-report
+          path: selftest-report.json
+          retention-days: 14

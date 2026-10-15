@@ -1,0 +1,51 @@
+name: Deploy Site to Pages
+
+on:
+  push:
+    branches: [main, master]
+    paths: ["web/**", ".github/workflows/deploy-pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: آماده‌سازی سایت
+    runs-on: ubuntu-latest
+    steps:
+      - name: دریافت مخزن
+        uses: actions/checkout@v4
+
+      - name: بررسی فایل‌های ضروری
+        run: |
+          set -euo pipefail
+          for f in web/index.html web/robots.txt web/sitemap.xml web/manifest.webmanifest; do
+            test -f "$f" || { echo "::error::فایل ضروری غایب: $f"; exit 1; }
+          done
+
+      - name: پیکربندی Pages
+        uses: actions/configure-pages@v5
+
+      - name: بسته‌بندی سایت
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+  deploy:
+    name: انتشار
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: انتشار روی Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

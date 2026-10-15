@@ -1,0 +1,68 @@
+name: Telegram Download
+
+on:
+  workflow_dispatch:
+    inputs:
+      link:
+        description: "لینک پست تلگرام (مثال: https://t.me/channel/123)"
+        required: true
+        type: string
+      split_threshold_mb:
+        description: "حد تقسیم فایل به مگابایت"
+        required: false
+        default: "90"
+        type: string
+      keep_persian:
+        description: "نام فارسی حفظ شود؟ (روی گیت‌هاب توصیه نمی‌شود)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  download:
+    name: دانلود فایل پست
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: دریافت مخزن
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: نصب وابستگی‌ها
+        run: pip install --no-cache-dir -r bots/telegram/requirements.txt
+
+      - name: خودآزمایی دانلودر (بدون شبکه)
+        run: python3 bots/telegram/downloader.py --selftest
+
+      - name: دانلود
+        env:
+          TG_SESSION: ${{ secrets.TG_SESSION }}
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          LINK: ${{ inputs.link }}
+          SPLIT_MB: ${{ inputs.split_threshold_mb }}
+          KEEP_FA: ${{ inputs.keep_persian }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TG_SESSION:-}" ] || [ -z "${TG_API_ID:-}" ] || [ -z "${TG_API_HASH:-}" ]; then
+            echo "::error::رازهای TG_SESSION، TG_API_ID و TG_API_HASH باید تنظیم شوند."
+            exit 1
+          fi
+          mkdir -p downloads
+          ARGS=(--link "$LINK" --out downloads --split-threshold-mb "$SPLIT_MB" --json)
+          [ "$KEEP_FA" = "true" ] && ARGS+=(--keep-persian)
+          python3 bots/telegram/downloader.py "${ARGS[@]}" | tee downloads/report.json
+
+      - name: بارگذاری خروجی
+        uses: actions/upload-artifact@v4
+        with:
+          name: telegram-download
+          path: downloads/
+          retention-days: 14

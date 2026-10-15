@@ -1,0 +1,31 @@
+{
+  "name": "اندیشکده تمدن نوین اسلامی",
+  "short_name": "PerShiaA",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0f16",
+  "theme_color": "#0a0f16",
+  "description": "اندیشکده تمدن نوین اسلامی — پژوهش مستند، نقشه ذهنی و نقشه راه",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%230a0f16'/%3E%3Cpath d='M96 36l19 40 41 8-30 29 8 42-38-21-38 21 8-42-30-29 41-8z' fill='%23d4b15b'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230a0f16'/%3E%3Cpath d='M256 96l51 107 110 21-80 78 21 113-102-56-102 56 21-113-80-78 110-21z' fill='%23d4b15b'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230a0f16'/%3E%3Cpath d='M256 116l47 98 101 19-74 72 20 104-94-52-94 52 20-104-74-72 101-19z' fill='%23d4b15b'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

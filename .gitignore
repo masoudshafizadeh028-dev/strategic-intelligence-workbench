@@ -6,3 +6,59 @@ __pycache__/
 *.pyc
 archive/
 app/data/
+
+# --- PerShiaA-Network ---
+# ── رازها و اعتبارنامه‌ها (هرگز کامیت نشود) ──
+.env
+.env.*
+*.session
+*.session-journal
+secrets/
+*.pem
+*.key
+bale-user-adapter.local.*
+
+# ── پروفایل و داده‌ی محلی مرورگر ──
+.bale-profile/
+.cache/
+data/corpus/*
+!data/corpus/.gitkeep
+data/dossiers/*
+!data/dossiers/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+
+# ── خروجی‌های تولیدشده ──
+ai/output/*
+!ai/output/.gitkeep
+data/osint/
+downloads/*
+!downloads/.gitkeep
+selftest-report.json
+
+# ── پایتون ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Node ──
+node_modules/
+bots/bale/balejs/dist/
+*.tsbuildinfo
+
+# ── سیستم و ویرایشگر ──
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ── موقت ──
+*.tmp
+*.part[0-9][0-9][0-9]
+tmp/

@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شبکه یکپارچه پرامپت‌های PerShiaA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0b0f19;
+  --bg-surface: #111827;
+  --bg-elevated: #1f2937;
+  --ink-primary: #f3f4f6;
+  --ink-secondary: #9ca3af;
+  --ink-muted: #6b7280;
+  --accent-gold: #d4af37;
+  --accent-gold-dim: #b8941f;
+  --accent-teal: #14b8a6;
+  --accent-rose: #f43f5e;
+  --accent-indigo: #6366f1;
+  --line: rgba(255,255,255,0.06);
+  --radius: 16px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  --step--2: clamp(0.64rem, 0.62rem + 0.15vw, 0.75rem);
+  --step--1: clamp(0.8rem, 0.77rem + 0.2vw, 0.9rem);
+  --step-0: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.6vw, 1.5rem);
+  --step-2: clamp(1.5rem, 1.3rem + 1.2vw, 2.25rem);
+  --step-3: clamp(2rem, 1.6rem + 2.4vw, 3.5rem);
+  --step-4: clamp(2.8rem, 2.2rem + 3.5vw, 5rem);
+  --space: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Vazirmatn", "Tahoma", system-ui, sans-serif;
+  background: var(--bg-deep);
+  color: var(--ink-primary);
+  line-height: 1.8;
+  font-size: var(--step-0);
+  overflow-x: hidden;
+}
+
+/* Background texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212,175,55,0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(20,184,166,0.05), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+header, main, footer { position: relative; z-index: 1; }
+
+/* Header */
+header {
+  padding: calc(var(--space)*3) var(--space) calc(var(--space)*2);
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+
+header h1 {
+  font-size: var(--step-4);
+  font-weight: 800;
+  line-height: 1.2;
+  background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-teal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: calc(var(--space)*0.75);
+}
+
+header .subtitle {
+  font-size: var(--step-1);
+  color: var(--ink-secondary);
+  font-weight: 300;
+  max-width: 50ch;
+  margin: 0 auto;
+}
+
+header .badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: calc(var(--space)*1.25);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: var(--step--2);
+  font-weight: 500;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  color: var(--ink-secondary);
+}
+
+.badge-gold { border-color: rgba(212,175,55,0.3); color: var(--accent-gold); }
+.badge-teal { border-color: rgba(20,184,166,0.3); color: var(--accent-teal); }
+.badge-rose { border-color: rgba(244,63,94,0.3); color: var(--accent-rose); }
+.badge-indigo { border-color: rgba(99,102,241,0.3); color: var(--accent-indigo); }
+
+/* Layout */
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 calc(var(--space)*1.5);
+}
+
+section {
+  padding: calc(var(--space)*3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+section:last-of-type { border-bottom: none; }
+
+h2 {
+  font-size: var(--step-3);
+  font-weight: 700;
+  margin-bottom: calc(var(--space)*1.25);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+h2 .num {
+  font-size: var(--step--1);
+  font-weight: 800;
+  color: var(--accent-gold);
+  opacity: 0.7;
+}
+
+h3 {
+  font-size: var(--step-2);
+  font-weight: 600;
+  margin: calc(var(--space)*1.5) 0 calc(var(--space)*0.75);
+  color: var(--ink-primary);
+}
+
+h4 {
+  font-size: var(--step-1);
+  font-weight: 600;
+  margin: calc(var(--space)*1) 0 calc(var(--space)*0.5);
+  color: var(--accent-gold-dim);
+}
+
+p { margin-bottom: calc(var(--space)*0.75); max-width: 68ch; }
+
+/* Network diagram */
+.network-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--space)*1.5);
+  margin: calc(var(--space)*1.5) 0;
+  overflow-x: auto;
+}
+
+.network-svg {
+  width: 100%;
+  min-width: 640px;
+  height: 520px;
+}
+
+/* Cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: calc(var(--space)*1);
+  margin: calc(var(--space)*1.5) 0;
+}
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--space)*1.25);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(212,175,55,0.2);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.card-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-weight: 700;
+  font-size: var(--step-1);
+}
+
+.card-meta {
+  font-size: var(--step--2);
+  color: var(--ink-muted);
+  margin-top: 0.15rem;
+}
+
+.card p {
+  font-size: var(--step--1);
+  color: var(--ink-secondary);
+  line-height: 1.7;
+  margin-bottom: 0.5rem;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.tag {
+  font-size: var(--step--2);
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--ink-muted);
+  border: 1px solid var(--line);
+}
+
+/* Prompt boxes */
+.prompt-box {
+  background: #0f172a;
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 12px;
+  padding: calc(var(--space)*1);
+  margin: calc(var(--space)*1) 0;
+  position: relative;
+}
+
+.prompt-box::before {
+  content: "پرامپت یکپارچه";
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  background: var(--bg-deep);
+  padding: 0 8px;
+  font-size: var(--step--2);
+  color: var(--accent-indigo);
+  font-weight: 600;
+}
+
+.prompt-box pre {
+  font-family: "Vazirmatn", monospace;
+  font-size: var(--step--1);
+  line-height: 1.9;
+  color: #c7d2fe;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: calc(var(--space)*1) 0;
+  font-size: var(--step--1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+th, td {
+  padding: 0.7rem 1rem;
+  text-align: right;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  background: var(--bg-elevated);
+  font-weight: 600;
+  color: var(--accent-gold);
+}
+
+tr:last-child td { border-bottom: none; }
+
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Lists */
+ul, ol {
+  margin: 0.75rem 0 0.75rem 1.5rem;
+  color: var(--ink-secondary);
+}
+
+li { margin-bottom: 0.4rem; }
+
+/* Highlight boxes */
+.highlight {
+  background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(20,184,166,0.05));
+  border: 1px solid rgba(212,175,55,0.15);
+  border-radius: var(--radius);
+  padding: calc(var(--space)*1);
+  margin: calc(var(--space)*1) 0;
+}
+
+.highlight h4 { color: var(--accent-gold); margin-top: 0; }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: calc(var(--space)*2) var(--space);
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+  border-top: 1px solid var(--line);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #374151; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .card:hover { transform: none; }
+}
+
+/* Print */
+@media print {
+  body { background: #fff; color: #000; }
+  .card, .prompt-box, .network-wrap { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>شبکه یکپارچه پرامپت‌های PerShiaA</h1>
+    <p class="subtitle">معماری یکپارچه برای ۸ پروژه تحلیلی، وب، OSINT، خودکارسازی و تولید محتوا</p>
+    <div class="badge-row">
+      <span class="badge badge-gold">۸ مخزن</span>
+      <span class="badge badge-teal">۵ لایه معماری</span>
+      <span class="badge badge-rose">۱۲ پرامپت یکپارچه</span>
+      <span class="badge badge-indigo">GitHub Pages + Docker</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+<!-- بخش ۱: نمای کلی شبکه -->
+<section>
+  <h2><span class="num">۰۱</span> نقشه معماری شبکه یکپارچه</h2>
+  <p>این سند یک شبکه یکپارچه از پرامپت‌ها و معماری فنی را توصیف می‌کند که هشت مخزن مجزا را به یک اکوسیستم تحلیلی-تولیدی متصل می‌سازد. هر پروژه یک گره در این شبکه است و لایه‌های میانی اتصال، جریان داده و منطق یکپارچه را مدیریت می‌کنند.</p>
+
+  <div class="network-wrap">
+    <svg class="network-svg" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#6b7280" opacity="0.6"/>
+        </marker>
+        <linearGradient id="gradGold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#d4af37" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#d4af37" stop-opacity="0.05"/>
+        </linearGradient>
+        <linearGradient id="gradTeal" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#14b8a6" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#14b8a6" stop-opacity="0.05"/>
+        </linearGradient>
+        <linearGradient id="gradRose" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#f43f5e" stop-opacity="0.05"/>
+        </linearGradient>
+        <linearGradient id="gradIndigo" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#6366f1" stop-opacity="0.05"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Center Hub -->
+      <circle cx="450" cy="260" r="55" fill="url(#gradGold)" stroke="#d4af37" stroke-width="2"/>
+      <text x="450" y="255" text-anchor="middle" fill="#f3f4f6" font-size="13" font-weight="700">هاب یکپارچه</text>
+      <text x="450" y="272" text-anchor="middle" fill="#9ca3af" font-size="10">PerShiaA Core</text>
+
+      <!-- Layer 1: Knowledge -->
+      <rect x="80" y="40" width="160" height="60" rx="12" fill="url(#gradGold)" stroke="#d4af37" stroke-width="1.5"/>
+      <text x="160" y="65" text-anchor="middle" fill="#f3f4f6" font-size="12" font-weight="700">persiaa-doctrine</text>
+      <text x="160" y="82" text-anchor="middle" fill="#9ca3af" font-size="10">موتور دکترین + OCR</text>
+
+      <!-- Layer 2: Web Presence -->
+      <rect x="340" y="40" width="160" height="60" rx="12" fill="url(#gradTeal)" stroke="#14b8a6" stroke-width="1.5"/>
+      <text x="420" y="65" text-anchor="middle" fill="#f3f4f6" font-size="12" font-weight="700">pershiaa</text>
+      <text x="420" y="82" text-anchor="middle" fill="#9ca3af" font-size="10">انديشکده وب + نقشه ذهنی</text>
+
+      <!-- Layer 3: OSINT -->
+      <rect x="600" y="40" width="160" height="60" rx="12" fill="url(#gradRose)" stroke="#f43f5e" stroke-width="1.5"/>
+      <text x="680" y="65" text-anchor="middle" fill="#f3f4f6" font-size="12" font-weight="700">PerShiaA-osint</text>
+      <text x="680" y="82" text-anchor="middle" fill="#9ca3af" font-size="10">تحلیل تهدید + گراف شبکه</text>
+
+      <!-- Layer 4a: Telegram Downloader -->
+      <rect x="80" y="420" width="160" height="60" rx="12" fill="url(#gradIndigo)" stroke="#6366f1" stroke-width="1.5"/>
+      <text x="160" y="445" text-anchor="middle" fill="#f3f4f6" font-size="12" font-weight="700">TelegramDownloader</text>
+      <text x="160" y="462" text-anchor="middle" fill="#9ca3af" font-size="10">دانلود خودکار فایل</text>
+
+      <!-- Layer 4b: AutoEitaa -->
+      <rect x="280" y="420" width="120" height="60" rx="12" fill="url(#gradIndigo)" stroke="#6366f1" stroke-width="1.5"/>
+      <text x="340" y="445" text-anchor="middle" fill="#f3f4f6" font-size="12" font-weight="700">AutoEitaa</text>
+      <text x="340" y="462" text-anchor="middle" fill="#9ca3af" font-size="10">ربات ایتا</text>
+
+      <!-- Layer 4c: baleself -->
+      <rect x="440" y="420" width="120" height="60" rx="12" fill="url(#gradIndigo)" stroke="#6366f1" stroke-width="1.5"/>
+      <text x="500" y="445" text-anchor="middle" fill="#f3f4f6" font-size="12" font-weight="700">baleself</text>
+      <text x="500" y="462" text-anchor="middle" fill="#9ca3af" font-size="10">سلف‌بات بله</text>
+
+      <!-- Layer 4d: balejs -->
+      <rect x="600" y="420" width="160" height="60" rx="12" fill="url(#gradIndigo)" stroke="#6366f1" stroke-width="1.5"/>
+      <text x="680" y="445" text-anchor="middle" fill="#f3f4f6" font-size="12" font-weight="700">balejs</text>
+      <text x="680" y="462" text-anchor="middle" fill="#9ca3af" font-size="10">کتابخانه TypeScript بله</text>
+
+      <!-- Layer 5: AI Content -->
+      <rect x="360" y="420" width="0" height="0" rx="12" fill="none"/> <!-- spacer -->
+      <rect x="750" y="230" width="130" height="60" rx="12" fill="url(#gradGold)" stroke="#d4af37" stroke-width="1.5"/>
+      <text x="815" y="255" text-anchor="middle" fill="#f3f4f6" font-size="12" font-weight="700">ai_melli</text>
+      <text x="815" y="272" text-anchor="middle" fill="#9ca3af" font-size="10">تولید تصویر/متن</text>
+
+      <!-- Connections to hub -->
+      <line x1="240" y1="80" x2="400" y2="220" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity="0.5"/>
+      <line x1="420" y1="100" x2="440" y2="205" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity="0.5"/>
+      <line x1="600" y1="80" x2="500" y2="220" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity="0.5"/>
+      <line x1="160" y1="420" x2="400" y2="300" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity="0.5"/>
+      <line x1="340" y1="420" x2="420" y2="315" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity="0.5"/>
+      <line x1="500" y1="420" x2="460" y2="315" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity="0.5"/>
+      <line x1="680" y1="420" x2="500" y2="300" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity="0.5"/>
+      <line x1="750" y1="260" x2="505" y2="260" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity="0.5"/>
+
+      <!-- Cross connections -->
+      <line x1="240" y1="60" x2="340" y2="60" stroke="#d4af37" stroke-width="1" opacity="0.3"/>
+      <line x1="500" y1="60" x2="600" y2="60" stroke="#f43f5e" stroke-width="1" opacity="0.3"/>
+      <line x1="240" y1="450" x2="280" y2="450" stroke="#6366f1" stroke-width="1" opacity="0.3"/>
+      <line x1="400" y1="450" x2="440" y2="450" stroke="#6366f1" stroke-width="1" opacity="0.3"/>
+      <line x1="560" y1="450" x2="600" y2="450" stroke="#6366f1" stroke-width="1" opacity="0.3"/>
+    </svg>
+  </div>
+
+  <div class="highlight">
+    <h4>راهنمای لایه‌ها</h4>
+    <ul>
+      <li><strong style="color:var(--accent-gold)">لایه دانش و دکترین:</strong> موتور تحلیلی persiaa-doctrine با OCR فارسی، API و داشبورد آفلاین</li>
+      <li><strong style="color:var(--accent-teal)">لایه حضور وب:</strong> سایت اندیشکده pershiaa با نقشه ذهنی، جستجو و نقشه راه</li>
+      <li><strong style="color:var(--accent-rose)">لایه OSINT:</strong> پلتفرم اطلاعاتی PerShiaA-osint با گراف شبکه و تحلیل تهدید</li>
+      <li><strong style="color:var(--accent-indigo)">لایه خودکارسازی پیام‌رسان‌ها:</strong> TelegramDownloader، AutoEitaa، baleself، balejs</li>
+      <li><strong style="color:var(--accent-gold)">لایه تولید محتوای AI:</strong> ai_melli برای تولید تصویر و متن با GitHub Actions</li>
+    </ul>
+  </div>
+</section>
+
+<!-- بخش ۲: توصیف هر پروژه -->
+<section>
+  <h2><span class="num">۰۲</span> توصیف دقیق پروژه‌ها و پرامپت‌های اختصاصی</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(212,175,55,0.15)">🏛️</div>
+        <div>
+          <div class="card-title">persiaa-doctrine</div>
+          <div class="card-meta">Python + HTML | MIT</div>
+        </div>
+      </div>
+      <p>موتور تحلیلی چندلایه با ۵۵ زیرسیستم، ۵۲ ارزیابی، داشبورد ۱۷تبی، OCR فارسی PDF، API دوگانه (FastAPI/stdlib) و کامپایلر مأموریت یکپارچه.</p>
+      <div class="card-tags">
+        <span class="tag">CLI</span><span class="tag">FastAPI</span><span class="tag">OCR</span><span class="tag">Tesseract</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(20,184,166,0.15)">🌐</div>
+        <div>
+          <div class="card-title">pershiaa</div>
+          <div class="card-meta">HTML + CSS + JS | GitHub Pages</div>
+        </div>
+      </div>
+      <p>سایت اندیشکده تمدن نوین اسلامی با طراحی تیره RTL، نقشه ذهنی تعاملی، جستجوی پیشرفته، نقشه راه فیلترشونده و داشبورد پیشرفت با localStorage.</p>
+      <div class="card-tags">
+        <span class="tag">RTL</span><span class="tag">Dark Theme</span><span class="tag">SEO</span><span class="tag">PWA-ready</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(244,63,94,0.15)">🕵️</div>
+        <div>
+          <div class="card-title">PerShiaA-osint</div>
+          <div class="card-meta">Python + FastAPI + Cytoscape.js</div>
+        </div>
+      </div>
+      <p>پلتفرم OSINT چندعامله با ایجنت PM/Research/Synthesis/Review، گراف شبکه تعاملی، کشف ایمیل مخفی GitHub و گزارش‌نویسی طبیعی.</p>
+      <div class="card-tags">
+        <span class="tag">Multi-Agent</span><span class="tag">Cytoscape</span><span class="tag">Docker</span><span class="tag">Dark Web</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(99,102,241,0.15)">📥</div>
+        <div>
+          <div class="card-title">TelegramDownloader</div>
+          <div class="card-meta">Python | GitHub Actions</div>
+        </div>
+      </div>
+      <p>دانلود خودکار فایل از پست‌های تلگرام با پشتیبانی از عکس، ویدیو، صوت، PDF، ZIP، RAR و تقسیم فایل‌های بزرگ. نام‌گذاری انگلیسی تصادفی برای فایل‌های فارسی.</p>
+      <div class="card-tags">
+        <span class="tag">GitHub Actions</span><span class="tag">Telegram</span><span class="tag">Batch</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(99,102,241,0.15)">🤖</div>
+        <div>
+          <div class="card-title">AutoEitaa</div>
+          <div class="card-meta">Python | Windows-optimized</div>
+        </div>
+      </div>
+      <p>چارچوب ساخت ربات برای پیام‌رسان ایتا. برنامه‌نویس پایتون می‌تواند منطق ربات خود را پیاده‌سازی کند: پاسخ به پیام، کارهای خودکار و هر رفتار دلخواه.</p>
+      <div class="card-tags">
+        <span class="tag">Eitaa</span><span class="tag">Bot Framework</span><span class="tag">Automation</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(99,102,241,0.15)">💬</div>
+        <div>
+          <div class="card-title">baleself</div>
+          <div class="card-meta">Python + Selenium | MIT</div>
+        </div>
+      </div>
+      <p>سلف‌بات پیام‌رسان بله با Selenium. پاسخ خودکار به پیام‌های خاص، تولید متن با AI برای عبارت «داپش بهم بگو» و قابلیت توسعه آسان.</p>
+      <div class="card-tags">
+        <span class="tag">Bale</span><span class="tag">Selenium</span><span class="tag">Self-Bot</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(99,102,241,0.15)">📦</div>
+        <div>
+          <div class="card-title">balejs</div>
+          <div class="card-meta">TypeScript + Node.js | MIT</div>
+        </div>
+      </div>
+      <p>کتابخانه Node.js برای بله با پشتیبانی از نشست کاربر واقعی (phone/session) و API ربات رسمی. پیام، گروه، کیف پول، فاکتور، نظرسنجی و گزارش.</p>
+      <div class="card-tags">
+        <span class="tag">TypeScript</span><span class="tag">WebSocket</span><span class="tag">gRPC-web</span><span class="tag">Bot API</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(212,175,55,0.15)">🎨</div>
+        <div>
+          <div class="card-title">ai_melli</div>
+          <div class="card-meta">GitHub Actions + Python</div>
+        </div>
+      </div>
+      <p>تولید تصویر و متن با AI روی سرورهای GitHub بدون API Key. گالری HTML خودکار، بهبود پرامپت فارسی، ۸ مدل تصویری و ۴ مدل متنی.</p>
+      <div class="card-tags">
+        <span class="tag">GitHub Actions</span><span class="tag">Image Gen</span><span class="tag">Text Gen</span><span class="tag">Gallery</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- بخش ۳: پرامپت‌های یکپارچه -->
+<section>
+  <h2><span class="num">۰۳</span> پرامپت‌های یکپارچه (Integrated Prompts)</h2>
+  <p>این بخش شامل ۱۲ پرامپت اصلی است که هر کدام یک جریان کاری میان‌پروژه‌ای (cross-repository) را فعال می‌کنند. هر پرامپت با فرمت قابل استفاده در LLM‌های مختلف طراحی شده است.</p>
+
+  <h3>الف) پرامپت‌های لایه دانش و تحلیل</h3>
+
+  <h4>پرامپت ۱: کامپایلر دکترین یکپارچه</h4>
+  <div class="prompt-box">
+    <pre>شما «کامپایلر دکترین PerShiaA» هستید. یک درخواست کاربر را دریافت می‌کنید و یک پرونده تحلیلی کامل تولید می‌کنید.
+
+ورودی: یک متن یا درخواست تحلیلی به زبان فارسی.
+خروجی: یک JSON با ساختار زیر:
+- dossier_id: شناسه یکتا
+- request_summary: خلاصه ۲ خطی
+- evaluation_layers: آرایه‌ای از ۵۲ ارزیابی با سطح اطمینان [F]/[I]/[H]/[M]
+- source_ledger: فهرست منابع با شناسه سند
+- analysis: تحلیل چندبخشی
+- scenarios: ۳ سناریوی محتمل
+- content_ready: ۵ قاب محتوای آماده (مقاله، پادکست، کاروسل، یوتیوب، توصیه‌نامه)
+- confidence_score: عدد ۰ تا ۱۰۰
+
+قوانین:
+۱. هر ادعا باید برچسب اطمینان معرفتی داشته باشد.
+۲. منابع باید از pdf_texts.json یا OCR استخراج‌شده باشند.
+۳. خروجی باید بدون اینترنت قابل تولید باشد.
+۴. اگر سند PDF اسکن‌شده باشد، ابتدا ocr_pipeline.py را فراخوانی کن.
+۵. داشبورد خروجی باید با doctrine_app.html سازگار باشد.</pre>
+  </div>
+
+  <h4>پرامپت ۲: OCR-آگاهی فارسی</h4>
+  <div class="prompt-box">
+    <pre>شما «لایه OCR فارسی PerShiaA» هستید. یک فایل PDF دریافت می‌کنید و متن قابل جستجو تولید می‌کنید.
+
+مراحل:
+۱. بررسی کن آیا PDF لایه متنی دارد (pdfminer) یا اسکن‌شده است.
+۲. اگر اسکن‌شده: tesseract با lang=fas+eng اجرا کن.
+۳. متن را ب NFKC نرمال‌سازی کن.
+۴. اعداد عربی/فارسی را استاندارد کن.
+۵. خروجی را به pdf_texts.json اضافه کن با فرمت:
+   {"doc_id": "", "pages": [{"page": 1, "text": "", "confidence": 0.92}]}
+۶. منابع استنادی را استخراج و در source_ledger ثبت کن.
+۷. داشبورد را با نتایج OCR به‌روز کن.</pre>
+  </div>
+
+  <h3>ب) پرامپت‌های لایه وب و اندیشکده</h3>
+
+  <h4>پرامپت ۳: مولد صفحات اندیشکده</h4>
+  <div class="prompt-box">
+    <pre>شما «مولد محتوای pershiaa» هستید. یک موضوع تمدنی دریافت می‌کنید و یک صفحه HTML کامل برای اندیشکده تمدن نوین اسلامی تولید می‌کنید.
+
+ورودی: عنوان موضوع + چکیده ۳خطی + محور تخصصی (۰۱-۰۶)
+خروجی: فایل HTML با ویژگی‌های زیر:
+- طراحی تیره RTL با پالت اختصاصی اندیشکده
+- هدر چسبنده با ناوبری
+- بخش معرفی، ماموریت، محورهای تخصصی
+- نقشه ذهنی تعاملی (با D3.js یا SVG) با ۸-۱۲ گره مفهومی
+- جستجوی سریع (⌘K) با فیلتر موضوعی
+- بخش نقشه راه فیلترشونده با وضعیت فازها
+- داشبورد پیشرفت با localStorage
+- robots.txt و sitemap.xml سازگار
+- کاملاً واکنش‌گرا (mobile-first)
+- آماده GitHub Pages (مسیرهای نسبی، بدون CORS)</pre>
+  </div>
+
+  <h4>پرامپت ۴: نقشه ذهنی تعاملی</h4>
+  <div class="prompt-box">
+    <pre>شما «موتور نقشه ذهنی PerShiaA» هستید. یک ساختار مفهومی دریافت می‌کنید و یک نقشه ذهنی SVG-based تولید می‌کنید.
+
+ورودی: لیست گره‌ها (id, label, category, x, y) و یال‌ها (source, target, relation)
+خروجی: کد JavaScript + SVG با قابلیت‌های:
+- زوم و پن با ماوس/تاچ
+- کلیک روی گره → نایش جزئیات در پنل کناری
+- جستجوی زنده روی گره‌ها
+- فیلتر بر اساس دسته‌بندی
+- ذخیره وضعیت در localStorage
+- انیمیشن ملایم برای یال‌ها
+- قابل embed در index.html pershiaa</pre>
+  </div>
+
+  <h3>ج) پرامپت‌های لایه OSINT</h3>
+
+  <h4>پرامپت ۵: هماهنگ‌سازی چندعامله OSINT</h4>
+  <div class="prompt-box">
+    <pre>شما «مدیر پروژه OSINT PerShiaA» هستید. یک هدف (target) دریافت می‌کنید و ۴ ایجنت را هماهنگ می‌کنید.
+
+ایجنت‌ها:
+۱. ResearchAgent: جمع‌آوری داده از GitHub، DNS، Social Media، Dark Web
+۲. SynthesisAgent: ترکیب داده‌ها و حذف تکراری‌ها
+۳. ReviewAgent: بررسی تناقضات و اعتبارسنجی
+۴. PM-Agent: تخصیص مأموریت و مدیریت گردش کار
+
+ورودی: {"target": "example.com", "modules": ["github","dns","social","darkweb"], "depth": "professional"}
+خروجی: {"report": "", "graph": {"nodes": [], "edges": []}, "emails": [], "breaches": [], "confidence": 0.0}
+
+قوانین:
+- گزارش باید با rewrite-playbook طبیعی‌سازی شود.
+- ایمیل‌های مخفی از تاریخچه کامیت GitHub استخراج شوند.
+- گراف باید با Cytoscape.js قابل نمایش باشد.
+- رابط کاربری تیره و حرفه‌ای باشد.
+- Docker روی پورت ۸۰۰۰ قابل اجرا باشد.</pre>
+  </div>
+
+  <h4>پرامپت ۶: گراف شبکه تعاملی OSINT</h4>
+  <div class="prompt-box">
+    <pre>شما «موتور بصری‌سازی PerShiaA-OSINT» هستید. داده‌های هویتی دریافت می‌کنید و یک گراف Cytoscape.js تولید می‌کنید.
+
+انواع گره:
+- email (آبی)
+- username (سبز)
+- ip (قرمز)
+- domain (بنفش)
+- breach (نارنجی)
+- phone (زرد)
+
+ویژگی‌ها:
+- Layoutهای قابل تعویض (cose, grid, circle, concentric)
+- کلیک روی گره → هایلایت همسایگان
+- دابل‌کلیک → زوم به زیرشبکه
+- جستجوی زنده
+- صادرات PNG/SVG
+- ریسپانسیو برای موبایل
+- پنل جزئیات با اطلاعات خام و تحلیلی
+- Dark theme با پالت #0f172a</pre>
+  </div>
+
+  <h3>د) پرامپت‌های لایه خودکارسازی پیام‌رسان‌ها</h3>
+
+  <h4>پرامپت ۷: دانلودر هوشمند تلگرام</h4>
+  <div class="prompt-box">
+    <pre>شما «دانلودر خودکار تلگرام PerShiaA» هستید. یک لینک پست تلگرام دریافت می‌کنید و فایل داخل آن را دانلود و ذخیره می‌کنید.
+
+ورودی: لینک پست تلگرام (مثل https://t.me/channel/123)
+خروجی: فایل ذخیره‌شده در پوشه downloads/
+
+مراحل:
+۱. استخراج channel_name  message_id از لینک
+۲. بررسی نوع فایل (photo, video, audio, document, voice)
+۳. دانلود با telethon یا pyrogram (بدون نیاز به bot token، با session string)
+۴. اگر فایل فارسی نام دارد، تبدیل به نام انگلیسی تصادفی (uuid)
+۵. اگر حجم > ۱۰۰MB، تقسیم به chunks
+۶. ذخیره متادیتا در downloads/meta.json
+۷. اجرا از طریق GitHub Actions workflow_dispatch
+
+GitHub Actions:
+- inputs: link, session_string (secret), rename_random (boolean), split_threshold_mb
+- outputs: فایل در پوشه downloads کامیت می‌شود
+- اگر فایل خیلی بزرگ باشد، در Release آپلود شود</pre>
+  </div>
+
+  <h4>پرامپت ۸: چارچوب ربات ایتا</h4>
+  <div class="prompt-box">
+    <pre>شما «چارچوب AutoEitaa PerShiaA» هستید. یک ساختار پروژه تمیز برای ربات ایتا تولید می‌کنید.
+
+ساختار:
+AutoEitaa/
+├── main.py              # نقطه ورود
+├─ config.py            # تنظیمات (token, admins, prefixes)
+├── bot/
+│   ├── __init__.py
+│   ├── core.py           # هسته اتصال به API ایتا
+│   ├── handlers/
+│   │   ├── __init__.py
+│   │   ├── echo.py
+│   │   ├── admin.py
+│   │   └── custom.py     # منطق دلخواه کاربر
+│   ├── middleware/
+│   │   └── logging.py
+│   └── utils/
+│       └── helpers.py
+├── requirements.txt
+└── README.md
+
+قابلیت‌ها:
+- سیستم handler ثبت‌نام‌شونده (plug-and-play)
+- پشتیبانی از دستورات (/start, /help, /status)
+- پاسخ به پیام‌های خاص با کلیدواژه
+- لاگ‌گیری به فایل
+- قابلیت توسعه آسان: کاربر فقط در handlers/custom.py کد می‌نویسد
+- نمونه اجرا در README</pre>
+  </div>
+
+  <h4>پرامپت ۹: سلف‌بات بله با Selenium</h4>
+  <div class="prompt-box">
+    <pre>شما «معمار baleself PerShiaA» هستید. یک ربات Selenium-based برای پیام‌رسان بله می‌سازید.
+
+معماری:
+- WebDriver wrapper برای bale.ai
+- سیستم روتینگ پیام: بر اساس regex یا کلیدواژه
+- پاسخ خودکار: "سلام" → "سلام! چطور می‌توانم کمک کنم؟"
+- دستور AI: "داپش بهم بگو [موضوع]" → اتصال به ai_melli → تولید متن → ارسال
+- فایل config.json برای دستورات و پاسخ‌های سفارشی
+- فایل main.py برای اجرا
+- پشتیبانی از Chrome headless
+- ذخیره session برای ورود مجدد بدون QR
+
+قابلیت توسعه:
+- افزودن handler جدید فقط با یک دکوراتور @on_message("pattern")
+- سیستم plugin با پوشه plugins/</pre>
+  </div>
+
+  <h4>پرامپت ۱۰: کتابخانه TypeScript بله</h4>
+  <div class="prompt-box">
+    <pre>شما «معمار balejs PerShiaA» هستید. یک کتابخانه TypeScript برای Node.js می‌ازید.
+
+ویژگی‌ها:
+- Client: ورود با phone یا session string
+- BotClient: API رسمی Bale Bot
+- Transport: WebSocket RPC + gRPC-web POST fallback
+- Handlers: on_message, on_command, on_callback_query
+- Messaging: send, edit, delete, forward, copy
+- Media: photo, document, video, audio, voice
+- Groups: join, leave, invite, permissions
+- Wallet: get_wallet, send_gift, open_gift
+- Payments: send_invoice, create_invoice_link, answer_pre_checkout_query
+- Reports: report_chat, report_message
+- Polls: long polling + webhook
+- Retry logic: maxRetries, retryBaseDelayMs, requestTimeoutMs
+
+ساختار:
+src/
+├── client.ts
+├── bot_client.ts
+├── auth/
+├── handlers/
+├── messaging/
+├── groups/
+├── wallet/
+├── payments/
+└── types/
+
+مثال‌ها:
+- examples/echo.js
+- examples/bot-echo.js
+- examples/session-login.js
+- examples/send-photo.js
+- examples/invoice.js</pre>
+  </div>
+
+  <h3>ه) پرامپت‌های لایه تولید محتوای AI</h3>
+
+  <h4>پرامپت ۱۱: ولیدکننده محتوای ملی</h4>
+  <div class="prompt-box">
+    <pre>شما «موتور ai_melli PerShiaA» هستید. یک پرامپت دریافت می‌کنید و تصویر یا متن تولید می‌کنید.
+
+حالت تصویر هوشمند:
+۱. دریافت پرامپت فارسی
+۲. بهبود خودکار: ترجمه به انگلیسی + افزودن جزئیات نورپردازی، سبک، ترکیب‌بندی
+۳. ارسال به API تولید تصویر (flux, flux-pro, flux-anime, ...)
+۴. دانلود و ذخیره در output/
+۵. ساخت گالری HTML با: پرامپت اصلی، پرامپت بهبودیافته، مدل، تاریخ، thumbnails
+
+حالت متن:
+۱. دریافت پرامپت + model + temperature + system_message
+۲. تولید متن با GPT/Mistral/Llama/Claude
+۳. ذخیره Markdown در output/
+۴. خروجی قابل دانلود
+
+GitHub Actions:
+- workflow_dispatch با inputs
+- کامیت خودکار به ریپو یا آپلود به Release
+- بدون نیاز به API Key (استفاده از سرویس‌های ریگان)</pre>
+  </div>
+
+  <h3>و) پرامپت‌های میان‌لایه‌ای (Cross-Layer)</h3>
+
+  <h4>پرامپت ۱۲: هماهنگ‌ساز کلان PerShiaA (Master Orchestrator)</h4>
+  <div class="prompt-box">
+    <pre>شما «هماهنگ‌ساز کلان PerShiaA» هستید. یک درخواست کاربر دریافت می‌کنید و آن را به زیرسیستم‌های مناسب هدایت می‌کنید.
+
+ورودی: "یک تحلیل OSINT از دامنه X بگیر، نتایج را در دکترین ثبت کن، یک پادکست تولید کن و در کانال تلگرام بفرست"
+
+گردش کار:
+۱. تحلیل intent → ["osint", "doctrine", "content", "telegram"]
+۲. اجرای PerShiaA-osint → دریافت گزارش و گراف
+۳. ارسال گزارش به persiaa-doctrine → ثبت در source_ledger → تولید dossier
+۴. ارسال dossier به ai_melli → تولید پادکست (متن + صدا)
+۵. ارسال به TelegramDownloader/AutoEitaa → انتشا در کانال
+۶. به‌روزرسانی pershiaa → افزودن به نقشه ذهنی و نقشه راه
+۷. بازگشت نتیجه نهایی به کاربر
+
+قوانین:
+- هر مرحله باید لاگ شود
+- اگر یک زیرسیستم fail شود، بقیه ادامه دهند (partial success)
+- خروجی نهایی شامل لینک‌های مستقیم باشد
+- داشبورد مرکزی وضعیت را نشان دهد</pre>
+  </div>
+</section>
+
+<!-- بخش ۴: جریان داده و API -->
+<section>
+  <h2><span class="num">۰۴</span> جریان داده و نقاط اتصال API</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>مبدأ</th>
+        <th>مقصد</th>
+        <th>پروتکل/فرمت</th>
+        <th>داده</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>persiaa-doctrine</td>
+        <td>pershiaa</td>
+        <td>JSON + HTML embed</td>
+        <td>داده‌های نقشه ذهنی، مقالات تحلیلی</td>
+      </tr>
+      <tr>
+        <td>persiaa-doctrine</td>
+        <td>PerShiaA-osint</td>
+        <td>REST API</td>
+        <td>source_ledger، ارزیابی‌های تهدید</td>
+      </tr>
+      <tr>
+        <td>PerShiaA-osint</td>
+        <td>persiaa-doctrine</td>
+        <td>JSON</td>
+        <td>گزارش OSINT، گراف هویت</td>
+      </tr>
+      <tr>
+        <td>ai_melli</td>
+        <td>pershiaa</td>
+        <td>HTML/Markdown</td>
+        <td>محتوای تولیدشده، گالری تصاویر</td>
+      </tr>
+      <tr>
+        <td>ai_melli</td>
+        <td>TelegramDownloader</td>
+        <td>GitHub Actions artifact</td>
+        <td>فایل‌های تصویر/متن</td>
+      </tr>
+      <tr>
+        <td>TelegramDownloader</td>
+        <td>persiaa-doctrine</td>
+        <td>PDF → OCR</td>
+        <td>فایل‌های PDF دانلودشده برای تحلیل</td>
+      </tr>
+      <tr>
+        <td>AutoEitaa / baleself</td>
+        <td>persiaa-doctrine</td>
+        <td>Webhook / Poll</td>
+        <td>پیام‌های دریافتی برای تحلیل دکترین</td>
+      </tr>
+      <tr>
+        <td>balejs</td>
+        <td>baleself</td>
+        <td>Node.js require</td>
+        <td>توابع کمکی messaging و auth</td>
+      </tr>
+      <tr>
+        <td>pershiaa</td>
+        <td>همه پروژه‌ها</td>
+        <td>Dashboard iframe / link</td>
+        <td>ناوبری یکپارچه، وضعیت سیستم</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- بخش ۵: راهنمای پیاده‌سازی -->
+<section>
+  <h2><span class="num">۰۵</span> راهنمای پیاده‌سازی و استقرار</h2>
+
+  <h3>۵-۱. ساختار مخزن یکپارچه</h3>
+  <div class="prompt-box">
+    <pre>PerShiaA-Network/
+├── README.md                    # این سند
+├── docker-compose.yml            # orchestration کل سیستم
+├── .github/
+│   └── workflows/
+│       ├── osint-scan.yml
+│       ├── ai-generate.yml
+│       ├── telegram-download.yml
+│       └── doctrine-update.yml
+├── hub/
+│   ├─ core.py                   # Master Orchestrator
+│   ├── dashboard.html            # داشبورد مرکزی
+│   └── config.yaml               # تنظیمات متقاطع
+├── doctrine/
+│   └── (submodule: persiaa-doctrine)
+├── web/
+│   └── (submodule: pershiaa)
+├── osint/
+│   └── (submodule: PerShiaA-osint)
+├── bots/
+│   ├── telegram/
+│   │   └── (submodule: TelegramDownloader)
+│   ├── eitaa/
+│   │   └── (submodule: AutoEitaa)
+│   └── bale/
+│       ├── baleself/
+       │   └── (submodule: baleself)
+│       └── balejs/
+│           └── (submodule: balejs)
+├── ai/
+│   └── (submodule: ai_melli)
+└── docs/
+    ├── architecture.md
+    ├── prompts.md                # ۱۲ پرامپت یکپارچه
+    └── api-spec.md</pre>
+  </div>
+
+  <h3>۵-۲. Docker Compose یکپارچه</h3>
+  <div class="prompt-box">
+    <pre>version: "3.9"
+services:
+  doctrine:
+    build: ./doctrine
+    ports: ["8001:8000"]
+    volumes: ["./data:/data"]
+  osint:
+    build: ./osint
+    ports: ["8002:8000"]
+    depends_on: [doctrine]
+  web:
+    build: ./web
+    ports: ["8080:80"]
+  hub:
+    build: ./hub
+    ports: ["8000:8000"]
+    environment:
+      DOCTRINE_URL: http://doctrine:8000
+      OSINT_URL: http://osint:8000
+      WEB_PATH: /web</pre>
+  </div>
+
+  <h3>۵-۳. چک‌لیست خودآزمایی</h3>
+  <ul>
+    <li>persiaa-doctrine: <code>python doctrine_engine.py --selftest</code> → ۵۱/۵۱ باید pass شود</li>
+    <li>pershiaa: <code>python -m http.server 8000</code> → همه بخش‌ها باید لود شوند</li>
+    <li>PerShiaA-osint: <code>docker-compose up -d</code> → <code>curl localhost:8000/api/health</code></li>
+    <li>TelegramDownloader: GitHub Actions → Run workflow → بررسی پوشه downloads</li>
+    <li>AutoEitaa: <code>python main.py</code> → تست echo handler</li>
+    <li>baleself: <code>python main.py</code> → تست پاسخ خودکار</li>
+    <li>balejs: <code>npm run build && node examples/echo.js</code></li>
+    <li>ai_melli: GitHub Actions → Run workflow → بررسی output/</li>
+  </ul>
+</section>
+
+<!-- بخش ۶: نکات فنی به‌روز -->
+<section>
+  <h2><span class="num">۰۶</span> نکات فنی و مستندات به‌روز</h2>
+
+  <h3>۶-۱. GitHub Actions (۲۰۲۴-۲۰۲۵)</h3>
+  <ul>
+    <li>از <code>actions/upload-artifact@v4</code> استفاده کنید (v3 منسوخ شده)</li>
+    <li>workflow_dispatch اکنون تا ۲۵ input پشتیبانی می‌کند (قبلاً ۱۰)</li>
+    <li>برای اشتراک artifact بین workflowها از cache یا external storage استفاده کنید</li>
+    <li>محدودیت payload ورودی: ۶۵,۵۳۵ کاراکتر</li>
+  </ul>
+
+  <h3>۶-۲. FastAPI + Cytoscape.js</h3>
+  <ul>
+    <li>FastAPI برای سرو‌دهی static files از <code>StaticFiles</code> استفاده کنید</li>
+    <li>Cytoscape.js ۳.۲۶+ از WebGL renderer پشتیبانی می‌کند برای گراف‌های بزرگ</li>
+    <li>برای dark theme از <code>cy.style()</code> با پالت سفارشی استفاده کنید</li>
+    <li>Layout cose-bilkent برای گراف‌های جهت‌دار مناسب‌تر است</li>
+  </ul>
+
+  <h3>۶-۳. OCR فارسی</h3>
+  <ul>
+    <li>Tesseract ۵.x دقت بهتری برای فارسی دارد</li>
+    <li>ترکیب <code>tesseract-fas</code> + <code>tesseract-ara</code> برای متون عربی-فارسی</li>
+    <li>برای PDF اسکن‌شده از <code>pdf2image</code> + DPI ۳۰۰ استفاده کنید</li>
+    <li>پس‌پردازش با <code>regex</code> برای اصلاح فاصله‌گذاری فارسی</li>
+  </ul>
+
+  <h3>۶-۴. Bale Bot API</h3>
+  <ul>
+    <li>API رسمی: <code>https://tapi.bale.ai/bot&lt;TOKEN&gt;/METHOD</code></li>
+    <li>WebSocket RPC برای updates بلادرنگ</li>
+    <li>gRPC-web fallback برای محیط‌های محدود</li>
+    <li>Session string format: <code>userId:jwt</code></li>
+  </ul>
+</section>
+
+<!-- بخش ۷: نقشه راه -->
+<section>
+  <h2><span class="num">۰۷</span> نقشه راه شبکه یکپارچه</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>فاز</th>
+        <th>عنوان</th>
+        <th>وضعیت</th>
+        <th>پروژه‌های درگیر</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>۰۱</td>
+        <td>یکپارچه‌سازی دکترین و وب</td>
+        <td>✅ آماده</td>
+        <td>persiaa-doctrine + pershiaa</td>
+      </tr>
+      <tr>
+        <td>۰۲</td>
+        <td>اتصال OSINT به دکترین</td>
+        <td>⏳ ۶۵٪</td>
+        <td>PerShiaA-osint + persiaa-doctrine</td>
+      </tr>
+      <tr>
+        <td>۰۳</td>
+        <td>خودکارسازی انتشار محتوا</td>
+        <td>○ برنامه‌ریزی</td>
+        <td>ai_melli + TelegramDownloader + bots</td>
+      </tr>
+      <tr>
+        <td>۰۴</td>
+        <td>داشبورد مرکزی و هاب</td>
+        <td>○ برنامه‌ریزی</td>
+        <td>hub/ + pershiaa</td>
+      </tr>
+      <tr>
+        <td>۰۵</td>
+        <td>Docker Compose یکپارچه</td>
+        <td>○ برنامه‌ریزی</td>
+        <td>همه سرویس‌ها</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>شبکه یکپارچه PerShiaA — سند معماری و پرامپت‌ها</p>
+    <p style="margin-top:0.5rem; font-size:0.8rem;">آخرین به‌روزرسانی: ۲۰۲۶-۱۰-۰۴ | نسخه ۱.۰.۰</p>
+  </div>
+</footer>
+
+</body>
+</html>

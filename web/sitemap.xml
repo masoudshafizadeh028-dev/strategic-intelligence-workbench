@@ -1,0 +1,9 @@
+<!-- DEPLOY: قبل از دیپلوی، دامنه‌ی placeholder زیر را با دامنه‌ی نهایی عوض کن. فرگمنت‌ها (#...) عمداً حذف شدند چون در sitemap معتبر نیستند. -->
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://masoudshafizadeh028-dev.github.io/pershiaa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
