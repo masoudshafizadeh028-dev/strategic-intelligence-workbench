@@ -210,6 +210,29 @@ def cmd_osint(args) -> int:
     return 0
 
 
+def cmd_osint_targets(args) -> int:
+    from engine.osint import OsintError, validate_target
+    st = _store()
+    if args.action == "list":
+        for t in st.list_targets():
+            print(f"{t['target']}\t{t['kind']}\t{t['label']}")
+    elif args.action == "add":
+        try:
+            kind = validate_target(args.target)
+        except OsintError as e:
+            print(f"خطا: {e}", file=sys.stderr)
+            return 2
+        st.save_target(args.target.strip(), kind, args.label)
+        print(json.dumps({"target": args.target.strip(), "kind": kind},
+                         ensure_ascii=False))
+    else:
+        if not args.target or not st.remove_target(args.target):
+            print("خطا: هدف یافت نشد (--target)", file=sys.stderr)
+            return 2
+        print(f"حذف شد: {args.target}")
+    return 0
+
+
 def cmd_ocr(args) -> int:
     from engine.ocr import OcrError, extract_text_layer, search_pages
     try:
@@ -286,8 +309,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("osint", help="OSINT محدود و مجاز (دامنه/گیت‌هاب)")
     p.add_argument("target")
-    p.add_argument("--connectors", default="dns,github")
+    p.add_argument("--connectors", default="dns,tls,http,github")
     p.set_defaults(func=cmd_osint)
+
+    p = sub.add_parser("osint-targets", help="مدیریت اهداف رصد")
+    p.add_argument("action", choices=("list", "add", "rm"))
+    p.add_argument("--target", default="")
+    p.add_argument("--label", default="")
+    p.set_defaults(func=cmd_osint_targets)
     return ap
 
 

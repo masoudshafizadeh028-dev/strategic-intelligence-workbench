@@ -77,7 +77,7 @@ def test_github_mocked():
             return json.dumps(self.payload).encode()
 
     with mock.patch("urllib.request.urlopen",
-                    side_effect=[Resp(user), Resp(events)]):
+                    side_effect=[Resp(user), Resp(events), Resp([])]):
         out = GitHubConnector().lookup("octocat")
     assert out["rate_limit_remaining"] == "59"
     assert out["findings"][0]["source_id"] == "github:user:octocat"
@@ -139,3 +139,81 @@ def test_api_osint_mocked_connectors(api_base, monkeypatch):
                        {"target": "example.com", "connectors": ["dns"]})
     assert code == 200 and body["target"] == "example.com"
     assert "disclaimer" in body
+
+
+def test_tls_mocked():
+    import engine.osint as o
+    cert = {"issuer": ((("CN", "Test CA"),),), "subject": ((("CN", "example.com"),),),
+            "notAfter": "Jan  1 00:00:00 2030 GMT",
+            "subjectAltName": (("DNS", "example.com"), ("DNS", "www.example.com"))}
+
+    class Sock:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def getpeercert(self): return cert
+
+    class Ctx:
+        def wrap_socket(self, s, server_hostname=None): return Sock()
+
+    with mock.patch("socket.create_connection",
+                    return_value=mock.MagicMock()), \
+         mock.patch("ssl.create_default_context", return_value=Ctx()):
+        out = o.TlsConnector().lookup("example.com")
+    assert out["connector"] == "tls"
+    assert "Test CA" in out["findings"][0]["quote"]
+    assert "www.example.com" in out["findings"][0]["quote"]
+
+
+def test_tls_failure_honest():
+    import engine.osint as o
+    import socket as _s
+    with mock.patch("socket.create_connection", side_effect=ConnectionRefusedError("x")):
+        with pytest.raises(o.OsintError):
+            o.TlsConnector().lookup("example.com")
+
+
+def test_http_mocked():
+    import engine.osint as o
+
+    class Resp:
+        url = "https://example.com/"
+        status = 200
+        headers = {"Server": "TestSrv", "Content-Type": "text/html"}
+
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def read(self, n=-1): return b"<html><head><title>Hi</title></head></html>"
+
+    with mock.patch("urllib.request.urlopen", return_value=Resp()):
+        out = o.HttpConnector().lookup("example.com")
+    assert "TestSrv" in out["findings"][0]["quote"]
+    assert "Hi" in out["findings"][0]["quote"]
+
+
+def test_store_targets_and_cache(tmp_path):
+    import sys as _s
+    _s.path.insert(0, str(APP))
+    from engine.store import WorkbenchStore
+    st = WorkbenchStore(tmp_path / "c.db")
+    assert st.save_target("example.com", "domain", "تست") == "example.com"
+    assert any(t["target"] == "example.com" for t in st.list_targets())
+    assert st.remove_target("example.com") is True
+    assert st.remove_target("example.com") is False
+    assert st.cache_get("k") is None
+    st.cache_set("k", {"a": 1})
+    assert st.cache_get("k") == {"a": 1}
+    assert st.cache_get("k", ttl_s=-1) is None  # منقضی
+
+
+def test_api_targets_crud(api_base):
+    code, body = _post(api_base, "/api/v1/osint/targets",
+                       {"target": "example.com", "label": "t"})
+    assert code == 200 and body["kind"] == "domain"
+    assert _post(api_base, "/api/v1/osint/targets", {"target": "a@b.com"})[0] == 400
+    code, body = _post(api_base, "/api/v1/osint", {"target": "example.com",
+                                                   "connectors": ["nope"]})
+    assert code == 400  # کانکتور نامعتبر → بدون کانکتور معتبر
+    import urllib.request as u
+    req = u.Request(f"{api_base}/api/v1/osint/targets/example.com", method="DELETE")
+    with u.urlopen(req) as r:
+        assert r.status == 200

@@ -322,6 +322,7 @@ footer{margin-top:24px;border-top:1px solid var(--border);padding-top:12px;color
   <button class="tab-btn" data-tab="lab">🔬 معرفت و NLP</button>
   <button class="tab-btn" data-tab="pdfkb">📄 پایگاه OCR</button>
   <button class="tab-btn" data-tab="ops">🎛️ ارکستراتور و پژوهش</button>
+  <button class="tab-btn" data-tab="osint">🛰️ رصد OSINT</button>
 </nav>
 
 <main>
@@ -678,6 +679,40 @@ footer{margin-top:24px;border-top:1px solid var(--border);padding-top:12px;color
     </div>
   </div>
   <div id="pipe-output" style="margin-top:13px"></div>
+</section>
+
+<!-- ═══ رصد OSINT ═══ -->
+<section class="tab" id="tab-osint">
+  <div class="panel" style="margin-bottom:13px">
+    <h2 class="sec">🛰️ رصد مجاز <span class="hint">فقط دامنه یا نام‌کاربری گیت‌هاب — ایمیل/هویت حقیقی، دارک‌وب و HIBP ممنوع</span></h2>
+    <div class="form-row" style="grid-template-columns:2fr auto;align-items:end">
+      <div><label>هدف</label><input type="text" id="osint-target" placeholder="example.com یا octocat"></div>
+      <div><button class="btn" id="osint-scan">🔍 رصد کن</button></div>
+    </div>
+    <div class="filters-row" id="os-chips" style="margin-top:10px"></div>
+    <div class="mini" id="osint-msg" style="margin-top:6px"></div>
+  </div>
+  <div class="graph-layout">
+    <div class="graph-col">
+      <div class="svg-panel">
+        <svg class="graph-canvas" id="os-svg" viewBox="0 0 980 620" xmlns="http://www.w3.org/2000/svg">
+          <g id="os-viewport"><g id="os-edges-g"></g><g id="os-nodes-g"></g></g>
+        </svg>
+        <div class="graph-stats" id="os-stats"></div>
+        <div class="zoombar">
+          <button id="oz-in">+</button><button id="oz-out">−</button><button id="oz-fit">⤢</button>
+        </div>
+        <div class="graph-note">فقط روابط شاهددار نمایش داده می‌شود — کلیک = مدرک</div>
+      </div>
+    </div>
+    <aside class="panel details" id="os-details">
+      <div class="empty">هدفی را رصد کن<br><span class="mini">هر گره یک مدرک با منبع و زمان دسترسی است</span></div>
+    </aside>
+  </div>
+  <div class="panel" style="margin-top:13px">
+    <h2 class="sec">🎯 اهداف ثبت‌شده <span class="hint">حذف درخواستی</span></h2>
+    <div id="os-targets-list"></div>
+  </div>
 </section>
 
 <!-- ═══ مهارت‌ها و پلاگین ═══ -->
@@ -2236,6 +2271,111 @@ $("#doc-search").addEventListener("input",ev=>{
         <div class="mini" style="margin-top:10px">⚠️ اجرای واقعی نیازمند تأیید انسانی است</div>
       </div>`;
   }
+})();
+
+/* ═══════════ رصد OSINT (گراف شاهددار) ═══════════ */
+(function(){
+  const CONNS=["dns","tls","http","github"];
+  const active=new Set(CONNS);
+  $("#os-chips").innerHTML=CONNS.map(c=>
+    `<span class="chip on" data-conn="${c}">${c}</span>`).join("");
+  $("#os-chips").addEventListener("click",ev=>{
+    const chip=ev.target.closest(".chip");if(!chip)return;
+    const c=chip.dataset.conn;
+    if(active.has(c)){active.delete(c);chip.classList.remove("on");}
+    else{active.add(c);chip.classList.add("on");}
+  });
+
+  let graph=null;
+  function ensureGraph(){
+    if(graph)return graph;
+    const state={nodes:[],edges:[]};
+    graph=makeForceGraph({
+      state,cats:["target",...CONNS],catKey:"_cat",
+      svg:"#os-svg",vp:"#os-viewport",edgesG:"#os-edges-g",nodesG:"#os-nodes-g",
+      statsEl:"#os-stats",zIn:"#oz-in",zOut:"#oz-out",zFit:"#oz-fit",
+      storeKey:"doctrine_osint_graph_extras",
+      label:n=>(n._cat==="target"?n.label:String(n.label).slice(0,26)),
+      tooltip:n=>(n.quote||n.label||"").slice(0,100),
+      onSelect:(id,nb)=>{
+        const n=nb[id];if(!n)return;
+        if(n._cat==="target"){
+          $("#os-details").innerHTML=`<h3>🎯 ${esc(n.label)}</h3>
+            <div class="cat">گره هدف — ${fa(n._k)} مدرک</div>`;
+          return;
+        }
+        $("#os-details").innerHTML=`
+          <h3 style="font-size:.85rem">${esc(n.label)}</h3>
+          <div class="cat">کانکتور: ${esc(n._cat)} · اطمینان ${fa(Math.round((n.weight/10)*100))}٪</div>
+          <p class="desc" style="margin-top:8px">«${esc(n.quote||"—")}»</p>
+          ${n.url?`<div class="mini" style="margin-top:6px">🔗 <a href="${esc(n.url)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(String(n.url).slice(0,60))}</a></div>`:""}
+          <div class="mini" style="margin-top:4px">🕐 ${esc(n.accessed_at||"")}</div>
+          <div class="mini">روش: ${esc(n.method||"")}</div>`;
+      }
+    });
+    return graph;
+  }
+
+  async function refreshTargets(){
+    try{
+      const r=await fetch("/api/v1/osint/targets");
+      if(!r.ok)throw new Error();
+      const d=await r.json();
+      $("#os-targets-list").innerHTML=(d.targets||[]).map(t=>`
+        <div class="rec-item"><span style="flex:1"><b>${esc(t.target)}</b>
+          <span class="mini">${esc(t.kind)}${t.label?" · "+esc(t.label):""}</span></span>
+          <button class="btn ghost" data-osdel="${esc(t.target)}"
+            style="padding:2px 12px;font-size:.75rem;color:var(--danger)">🗑️ حذف</button>
+        </div>`).join("")||'<span class="mini">هدفی ثبت نشده</span>';
+    }catch(e){$("#os-targets-list").innerHTML='<span class="mini">سرور در دسترس نیست (آفلاین)</span>';}
+  }
+  $("#os-targets-list").addEventListener("click",async ev=>{
+    const b=ev.target.closest("[data-osdel]");if(!b)return;
+    if(!confirm("این هدف حذف شود؟"))return;
+    await fetch("/api/v1/osint/targets/"+encodeURIComponent(b.dataset.osdel),{method:"DELETE"});
+    refreshTargets();toast("هدف حذف شد");
+  });
+
+  $("#osint-scan").addEventListener("click",async()=>{
+    const target=$("#osint-target").value.trim();
+    if(!target)return toast("هدفی بنویس (دامنه یا نام‌کاربری)");
+    if(!active.size)return toast("حداقل یک کانکتور انتخاب کن");
+    $("#osint-msg").textContent="در حال رصد…";
+    let out;
+    try{
+      const r=await fetch("/api/v1/osint",{method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({target,connectors:[...active]})});
+      out=await r.json();
+      if(!r.ok)throw new Error(out.error||"خطا");
+    }catch(e){
+      $("#osint-msg").textContent="❌ "+(e.message||"سرور در دسترس نیست");
+      return;
+    }
+    const g=ensureGraph();
+    g.state.nodes=[];
+    g.state.edges=[];
+    g.state.nodes.push({id:"t:"+target,label:target,_cat:"target",weight:9,
+      _k:(out.connectors||[]).reduce((a,c)=>a+(c.findings||[]).length,0)});
+    (out.connectors||[]).forEach(c=>{
+      (c.findings||[]).forEach((f,i)=>{
+        const id="f:"+c.connector+":"+i+":"+String(f.source_id).slice(-12);
+        g.state.nodes.push({id,label:f.source_id,_cat:c.connector,
+          weight:Math.round((f.confidence||0.7)*10),
+          quote:f.quote,url:f.url,accessed_at:f.accessed_at,method:f.method});
+        g.state.edges.push({source:"t:"+target,target:id,type:"شاهد",strength:0.6});
+      });
+    });
+    Object.entries(out.skipped||{}).forEach(([k,v])=>{
+      $("#osint-msg").textContent=`ردشده: ${k} (${v})`;
+    });
+    if(!(out.connectors||[]).length)$("#osint-msg").textContent="یافته‌ای نیست";
+    else if(!Object.keys(out.skipped||{}).length)
+      $("#osint-msg").textContent=`✅ ${fa(g.state.nodes.length-1)} مدرک از ${fa(out.connectors.length)} کانکتور${out.cached?" (کش)":""}`;
+    g.rebuild();
+    refreshTargets();
+  });
+  refreshTargets();
 })();
 
 /* ═══════════ [V6] مهارت‌ها و پلاگین — قابل توسعه ═══════════ */

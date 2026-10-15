@@ -52,6 +52,17 @@ CREATE TABLE IF NOT EXISTS runs(
   output TEXT DEFAULT '{}',
   created_at REAL
 );
+CREATE TABLE IF NOT EXISTS osint_targets(
+  target TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,
+  label TEXT DEFAULT '',
+  created_at REAL
+);
+CREATE TABLE IF NOT EXISTS osint_cache(
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  created_at REAL
+);
 """
 
 
@@ -207,3 +218,40 @@ class WorkbenchStore:
             + " ORDER BY id DESC LIMIT ?"
         args = ([kind] if kind else []) + [limit]
         return self._read(q, args)
+
+    # ── اهداف OSINT (ثبت/حذف درخواستی) ──
+    def save_target(self, target: str, kind: str, label: str = "") -> str:
+        self._write(
+            "INSERT OR REPLACE INTO osint_targets(target,kind,label,created_at)"
+            " VALUES(?,?,?,?)", (target, kind, label, _now()))
+        return target
+
+    def list_targets(self):
+        return self._read("SELECT * FROM osint_targets ORDER BY created_at DESC")
+
+    def remove_target(self, target: str) -> bool:
+        return self._write(
+            "DELETE FROM osint_targets WHERE target=?", (target,)).rowcount > 0
+
+    # ── کش OSINT با TTL ──
+    @staticmethod
+    def cache_key(target: str, connectors: tuple) -> str:
+        import hashlib
+        return hashlib.sha1(
+            f"{target}|{','.join(sorted(connectors))}".encode()).hexdigest()[:16]
+
+    def cache_get(self, key: str, ttl_s: float = 3600):
+        rows = self._read("SELECT value, created_at FROM osint_cache WHERE key=?", (key,))
+        if not rows:
+            return None
+        if _now() - rows[0]["created_at"] > ttl_s:
+            return None
+        try:
+            return json.loads(rows[0]["value"])
+        except ValueError:
+            return None
+
+    def cache_set(self, key: str, value: dict):
+        self._write(
+            "INSERT OR REPLACE INTO osint_cache(key,value,created_at) VALUES(?,?,?)",
+            (key, json.dumps(value, ensure_ascii=False), _now()))

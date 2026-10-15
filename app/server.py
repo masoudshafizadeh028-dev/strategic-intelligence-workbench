@@ -201,6 +201,8 @@ class Handler(BaseHTTPRequestHandler):
                              "api": API_VERSION, "offline": True})
         elif path == "/api/v1/skills":
             self._send(200, {"skills": store().list_skills()})
+        elif path == "/api/v1/osint/targets":
+            self._send(200, {"targets": store().list_targets()})
         else:
             self._send(404, {"error": "not found"})
 
@@ -229,8 +231,30 @@ class Handler(BaseHTTPRequestHandler):
             self._websearch()
         elif path == "/api/v1/osint":
             self._osint()
+        elif path == "/api/v1/osint/targets":
+            self._osint_target_save()
         else:
             self._send(404, {"error": "not found"})
+
+    def _osint_target_save(self):
+        from engine.osint import OsintError as _OE, validate_target as _vt
+        data = self._read_json()
+        if not isinstance(data, dict) or data.get("__too_large__"):
+            self._send(400, {"error": "invalid JSON"})
+            return
+        target = data.get("target", "")
+        try:
+            kind = _vt(target) if isinstance(target, str) else None
+        except _OE as exc:
+            self._send(400, {"error": str(exc)})
+            return
+        if kind is None:
+            self._send(400, {"error": "invalid target"})
+            return
+        label = data.get("label", "")
+        store().save_target(target.strip(), kind,
+                            label if isinstance(label, str) else "")
+        self._send(200, {"target": target.strip(), "kind": kind})
 
     def do_DELETE(self):
         path = urllib.parse.urlparse(self.path).path
@@ -240,6 +264,12 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, {"removed": skill_id})
             else:
                 self._send(404, {"error": "skill not found"})
+        elif path.startswith("/api/v1/osint/targets/"):
+            target = urllib.parse.unquote(path.rsplit("/", 1)[-1])
+            if store().remove_target(target):
+                self._send(200, {"removed": target})
+            else:
+                self._send(404, {"error": "target not found"})
         else:
             self._send(404, {"error": "not found"})
 
@@ -457,10 +487,20 @@ class Handler(BaseHTTPRequestHandler):
         if not isinstance(target, str):
             self._send(400, {"error": "invalid target"})
             return
-        connectors = data.get("connectors") or ["dns", "github"]
+        connectors = data.get("connectors") or ["dns", "tls", "http", "github"]
         if not isinstance(connectors, list):
             self._send(400, {"error": "invalid connectors"})
             return
+        fresh = bool(data.get("fresh", False))
+        st = store()
+        key = st.cache_key(target, tuple(sorted(
+            c for c in connectors if isinstance(c, str))))
+        if not fresh:
+            hit = st.cache_get(key)
+            if hit is not None:
+                hit["cached"] = True
+                self._send(200, hit)
+                return
         try:
             from engine.osint import OsintError as _OE, collect as _collect
             out = _collect(target, tuple(c for c in connectors if isinstance(c, str)))
@@ -470,6 +510,9 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as exc:  # noqa: BLE001
             self._send(500, {"error": str(exc)})
             return
+        out["cached"] = False
+        st.save_target(out["target"], out["kind"])
+        st.cache_set(key, out)
         self._send(200, out)
 
     def log_message(self, *args):

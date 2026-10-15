@@ -18,6 +18,11 @@ from datetime import datetime, timezone
 
 USER_AGENT = "StrategicWorkbench-OSINT/1.0 (authorized-targets-only)"
 DEFAULT_TIMEOUT = 15
+HTTP_MAX_BYTES = 200_000
+
+# حداقل فاصله بین فراخوانی‌های بیرونی هر کانکتور (ثانیه) — ضد سوءاستفاده
+MIN_INTERVAL = {"dns": 1.0, "tls": 1.0, "http": 2.0, "github": 2.0}
+_LAST_CALL: dict = {}
 
 _DOMAIN_RE = re.compile(r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+$")
 _GH_USER_RE = re.compile(r"^[A-Za-z0-9-]{1,39}$")
@@ -54,6 +59,14 @@ def _evidence(source_id: str, quote: str = "", url: str = "",
               confidence: float = 0.7, method: str = "") -> dict:
     return {"source_id": source_id, "quote": quote[:400], "url": url or "",
             "accessed_at": _now(), "confidence": confidence, "method": method}
+
+
+def _throttle(name: str):
+    """فاصله‌گذاری اجباری بین فراخوانی‌های بیرونی (حداکثر به اندازه MIN_INTERVAL صبر)."""
+    wait = MIN_INTERVAL.get(name, 1.0) - (time.monotonic() - _LAST_CALL.get(name, 0.0))
+    if wait > 0:
+        time.sleep(min(wait, max(MIN_INTERVAL.values())))
+    _LAST_CALL[name] = time.monotonic()
 
 
 class DnsConnector:
@@ -94,12 +107,13 @@ class DnsConnector:
 
 
 class GitHubConnector:
-    """گیت‌هاب عمومی: پروفایل + رویدادهای عمومی. بدون توکن، با احترام به سقف ۶۰/ساعت."""
+    """گیت‌هاب عمومی: پروفایل + رویدادهای عمومی + ریپوهای برتر. بدون توکن، با احترام به سقف ۶۰/ساعت."""
 
     name = "github"
     API = "https://api.github.com"
 
     def _get(self, path: str, timeout: int = DEFAULT_TIMEOUT) -> tuple:
+        _throttle("github")
         req = urllib.request.Request(
             self.API + path,
             headers={"User-Agent": USER_AGENT, "Accept": "application/vnd.github+json"},
@@ -118,7 +132,7 @@ class GitHubConnector:
             raise OsintError(f"خطای شبکه: {e}")
 
     def lookup(self, username: str, timeout: int = DEFAULT_TIMEOUT,
-               max_events: int = 10) -> dict:
+               max_events: int = 10, max_repos: int = 5) -> dict:
         if validate_target(username) != "github" or "." in username:
             raise OsintError("کانکتور گیت‌هاب فقط نام‌کاربری می‌پذیرد")
         user, rl1 = self._get(f"/users/{username}", timeout=timeout)
@@ -127,11 +141,22 @@ class GitHubConnector:
                                     timeout=timeout)
         except OsintError:
             events, rl2 = [], rl1
+        try:
+            repos, rl3 = self._get(f"/users/{username}/repos?per_page={max_repos}"
+                                   f"&sort=stargazers_count&direction=desc", timeout=timeout)
+        except OsintError:
+            repos, rl3 = [], rl2
         findings = [_evidence(
             f"github:user:{username}",
             quote=f"{user.get('name') or ''} | {user.get('bio') or ''} | "
                   f"repos:{user.get('public_repos')} followers:{user.get('followers')}",
             url=user.get("html_url", ""), confidence=0.95, method="api-users")]
+        for repo in (repos or [])[:max_repos]:
+            findings.append(_evidence(
+                f"github:repo:{repo.get('full_name', '')}",
+                quote=f"⭐ {repo.get('stargazers_count')} · "
+                      f"{repo.get('language') or '—'} · {repo.get('description') or ''}",
+                url=repo.get("html_url", ""), confidence=0.95, method="api-repos"))
         for ev in (events or [])[:max_events]:
             repo = (ev.get("repo") or {}).get("name", "")
             findings.append(_evidence(
@@ -141,14 +166,102 @@ class GitHubConnector:
                 confidence=0.9, method="api-events-public"))
         return {"connector": self.name, "target": username,
                 "accessed_at": _now(),
-                "rate_limit_remaining": rl2 or rl1,
+                "rate_limit_remaining": rl3 or rl2 or rl1,
                 "findings": findings}
 
 
-CONNECTORS = {"dns": DnsConnector, "github": GitHubConnector}
+class TlsConnector:
+    """گواهی TLS دامنه: issuer، انقضا، SANها. فقط خواندن handshake، بدون ارسال داده."""
+
+    name = "tls"
+
+    def lookup(self, domain: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
+        import ssl
+        if validate_target(domain) != "domain":
+            raise OsintError("کانکتور TLS فقط دامنه می‌پذیرد")
+        _throttle("tls")
+        ctx = ssl.create_default_context()
+        try:
+            with socket.create_connection((domain, 443), timeout=timeout) as sock:
+                with ctx.wrap_socket(sock, server_hostname=domain) as tls:
+                    cert = tls.getpeercert()
+        except socket.timeout:
+            raise OsintError("TLS: timeout")
+        except (socket.gaierror, ConnectionRefusedError, ssl.SSLError) as e:
+            raise OsintError(f"TLS: handshake ناموفق ({e})")
+        if not cert:
+            raise OsintError("TLS: گواهی دریافت نشد")
+
+        def _name(seq):
+            return "/".join(f"{k}={v}" for grp in (seq or []) for k, v in grp)
+
+        issuer = _name(cert.get("issuer"))
+        subject = _name(cert.get("subject"))
+        sans = [v for t, v in (cert.get("subjectAltName") or []) if t == "DNS"]
+        findings = [_evidence(
+            f"tls:{domain}",
+            quote=f"issuer: {issuer} | notAfter: {cert.get('notAfter', '')} | "
+                  f"SANs: {', '.join(sans[:8])}",
+            confidence=0.95, method="stdlib-ssl-handshake")]
+        if subject and subject != issuer:
+            findings.append(_evidence(
+                f"tls:subject:{domain}", quote=f"subject: {subject}",
+                confidence=0.9, method="stdlib-ssl-handshake"))
+        return {"connector": self.name, "target": domain,
+                "accessed_at": _now(), "findings": findings}
 
 
-def collect(target: str, connectors: tuple = ("dns", "github")) -> dict:
+class HttpConnector:
+    """اثرانگشت HTTP: وضعیت، سرور، عنوان صفحه. سقف ۲۰۰KB، بدون اجرای JS."""
+
+    name = "http"
+
+    def lookup(self, domain: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
+        import re as _re
+        if validate_target(domain) != "domain":
+            raise OsintError("کانکتور HTTP فقط دامنه می‌پذیرد")
+        _throttle("http")
+        for scheme in ("https://", "http://"):
+            req = urllib.request.Request(
+                scheme + domain, headers={"User-Agent": USER_AGENT}, method="GET")
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    body = r.read(HTTP_MAX_BYTES + 1)
+                    final, status = r.url, r.status
+                    server = r.headers.get("Server", "")
+                    ctype = r.headers.get("Content-Type", "")
+                    break
+            except urllib.error.HTTPError as e:
+                final, status, server, ctype, body = e.url or scheme + domain, \
+                    e.code, "", "", b""
+                break
+            except (urllib.error.URLError, socket.timeout, TimeoutError):
+                continue
+        else:
+            raise OsintError("HTTP: اتصال ناموفق (https و http)")
+        if len(body) > HTTP_MAX_BYTES:
+            body = body[:HTTP_MAX_BYTES]
+        title = ""
+        if "html" in ctype:
+            m = _re.search(rb"<title[^>]*>(.*?)</title>",
+                           body, _re.S | _re.I)
+            if m:
+                title = m.group(1).decode("utf-8", "replace").strip()[:200]
+        truncated = len(body) >= HTTP_MAX_BYTES
+        return {"connector": self.name, "target": domain,
+                "accessed_at": _now(),
+                "findings": [_evidence(
+                    f"http:{domain}",
+                    quote=f"{status} · server: {server or '—'} · "
+                          f"title: {title or '—'}{' · truncated' if truncated else ''}",
+                    url=final, confidence=0.9, method="urllib-headers-title")]}
+
+
+CONNECTORS = {"dns": DnsConnector, "tls": TlsConnector, "http": HttpConnector,
+              "github": GitHubConnector}
+
+
+def collect(target: str, connectors: tuple = ("dns", "tls", "http", "github")) -> dict:
     """اجرای کانکتورهای مجاز روی هدف مجاز. خروجی: یافته‌های شاهددار."""
     kind = validate_target(target)
     wanted = [c for c in connectors if c in CONNECTORS]
