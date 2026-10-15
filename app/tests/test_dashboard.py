@@ -31,10 +31,10 @@ def test_server_dossier_renders_provenance():
     assert "ردیابی ایجنت" in HTML
 
 
-def test_dashboard_js_syntax():
+def test_dashboard_js_syntax(tmp_path):
     scripts = _scripts()
     assert len(scripts) == 1
-    p = Path("/tmp/opencode/dash_check.js")
+    p = tmp_path / "dash_check.js"
     p.write_text(scripts[0], encoding="utf-8")
     import shutil
     node = shutil.which("node")
