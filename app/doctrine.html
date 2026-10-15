@@ -543,7 +543,7 @@ footer{margin-top:24px;border-top:1px solid var(--border);padding-top:12px;color
 <!-- ═══ استودیو محتوا ═══ -->
 <section class="tab" id="tab-studio">
   <div class="panel" style="margin-bottom:13px">
-    <h2 class="sec">🎙️ مولد بسته محتوایی <span class="hint">۱۰ قالب از ۱۵ سند</span></h2>
+    <h2 class="sec">🎙️ مولد بسته محتوایی <span class="hint">۱۰ قالب از ۱۵ سند · قالب‌محور (نه LLM)</span></h2>
     <div class="form-row">
       <div><label>سند منبع</label><select id="studio-doc"></select></div>
       <div><label>قالب</label><select id="studio-format"></select></div>
@@ -556,6 +556,7 @@ footer{margin-top:24px;border-top:1px solid var(--border);padding-top:12px;color
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn" id="btn-generate">✨ تولید محتوا</button>
+      <button class="btn ghost" id="btn-to-agent">🔍 تحلیل موتور</button>
       <button class="btn ghost" id="btn-copy">📋 کپی</button>
       <button class="btn ghost" id="btn-download">⬇️ دانلود Markdown</button>
     </div>
@@ -1611,6 +1612,23 @@ $("#doc-search").addEventListener("input",ev=>{
     download(`content_${$("#studio-doc").value}_${Date.now()}.md`,lastOutput,"text/markdown");
     toast("دانلود شد ✅");
   });
+  $("#btn-to-agent").addEventListener("click",async()=>{
+    if(!lastOutput)return toast("اول تولید کن");
+    const doc=getDoc($("#studio-doc").value);
+    toast("در حال تحلیل با موتور…");
+    try{
+      const r=await fetch("/api/v1/dossier",{method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({request:((doc?doc.summary+" ":"")+lastOutput).slice(0,1500),
+                             doc_id:doc?doc.id:undefined})});
+      if(!r.ok)throw new Error("bad status");
+      const d=await r.json();
+      $("#gen-meta").innerHTML+=`<span class="mtag">موتور: ${fa(d.claims.length)} ادعا</span>`;
+      $("#gen-output").textContent+="\n\n── تحلیل موتور (ادعاهای مستند/بدون‌شاهد) ──\n"+
+        d.claims.slice(0,4).map(c=>`[${c.certainty}/${c.type}] ${c.statement}${c.no_evidence?" (بدون شاهد)":""}`).join("\n");
+      toast("تحلیل موتور افزوده شد ✅");
+    }catch(e){toast("موتور در دسترس نیست (حالت آفلاین)");}
+  });
   $("#btn-generate").click();
 
   /* ─── معماری روایت ─── */
@@ -2013,6 +2031,15 @@ $("#doc-search").addEventListener("input",ev=>{
     const docId = $("#ms-doc").value;
     const doc = DATA.documents.find(d=>d.id===docId);
 
+    // ── تلاش برای ایجنت سرور؛ در صورت قطعی/آفلاین: محاسبه محلی مرورگری ──
+    let serverOut = null;
+    try {
+      const resp = await fetch("/api/v1/agent", {method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({request: r, doc_id: docId || undefined})});
+      if (resp.ok) serverOut = await resp.json();
+    } catch(e) { serverOut = null; }
+
     // ── کامپایل داده‌ها (همان منطق موتور) ──
     const needs = {
       research: ["تحقیق","پژوهش","بررسی","رصد","تحلیل"].some(w=>r.includes(w)),
@@ -2091,11 +2118,12 @@ $("#doc-search").addEventListener("input",ev=>{
     status.textContent = "کامپایل کامل شد ✓";
 
     // ── رندر دوسیه ──
+    if (serverOut) { renderServerDossier(serverOut); return; }
     const needsList = Object.entries(needs).filter(([k,v])=>v).map(([k])=>k);
     $("#ms-output").innerHTML = `
       <div class="panel ms-dossier">
         <div class="gen-head">
-          <h2 class="sec" style="margin:0">📋 دوسیه مأموریت</h2>
+          <h2 class="sec" style="margin:0">📋 دوسیه مأموریت <span class="badge bH">محلی آفلاین</span></h2>
           <div style="display:flex;gap:8px">
             <button class="btn ghost" id="ms-copy">📋 کپی Markdown</button>
             <button class="btn" id="ms-dl">⬇️ دانلود دوسیه</button>
@@ -2171,6 +2199,43 @@ $("#doc-search").addEventListener("input",ev=>{
 
   $("#btn-mission").addEventListener("click",run);
   $("#ms-request").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
+
+  /* ─── رندر دوسیه سرور (ایجنت واقعی با provenance و trace) ─── */
+  function renderServerDossier(out){
+    const d = out.dossier || {};
+    const claims = (d.claims||[]).map(c=>`
+      <div class="card" style="padding:10px 14px;margin-bottom:8px">
+        <div><span class="badge b${esc(c.certainty)}">${esc(c.certainty)}</span>
+          <span class="badge">${esc(c.type)}</span>
+          ${c.no_evidence?'<span class="badge bWARN">بدون شاهد</span>':""}</div>
+        <div style="font-size:.82rem;margin-top:4px">${esc(c.statement)}</div>
+        ${(c.sources||[]).map(s=>`<div class="mini">📎 ${esc(s.source_id)}`
+          + (s.url?` — <a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(String(s.url).slice(0,42))}</a>`:"")
+          + (s.quote?` — «${esc(String(s.quote).slice(0,120))}»`:"")
+          + `</div>`).join("")}
+      </div>`).join("");
+    const trace = (out.trace||[]).map(t=>`
+      <div class="orch-step"><div class="num">${fa(t.step)}</div>
+        <div class="body"><b>${esc(t.tool)}</b>
+          <div class="mini">${esc(JSON.stringify(t.detail).slice(0,160))}</div></div></div>`).join("");
+    $("#ms-output").innerHTML = `
+      <div class="panel ms-dossier">
+        <div class="gen-head">
+          <h2 class="sec" style="margin:0">📋 دوسیه مأموریت <span class="badge bOK">موتور سرور</span></h2>
+          <span class="mini">run #${fa(out.run_id||0)}${out.refined?" · بازبهبودشده ✓":""}</span>
+        </div>
+        <div class="gen-meta">
+          <span class="mtag">ادعاها: ${fa((d.claims||[]).length)}</span>
+          ${(out.issues||[]).length?`<span class="mtag">ایراد حسابرسی: ${fa(out.issues.length)}</span>`:`<span class="mtag">حسابرسی: سالم ✓</span>`}
+          <span class="mtag">مهارت‌ها: ${esc((out.skills||[]).join("، ")||"—")}</span>
+        </div>
+        <h3>ادعاها با provenance</h3>${claims||'<span class="mini">—</span>'}
+        <h3>ردیابی ایجنت</h3>${trace}
+        ${(d.limitations||[]).length?`<h3>محدودیت‌ها</h3><ul class="steps">${d.limitations.map(l=>`<li>⚠️ ${esc(l)}</li>`).join("")}</ul>`:""}
+        ${(out.issues||[]).length?`<h3>ایرادهای حسابرسی</h3><ul class="steps">${out.issues.map(i=>`<li style="color:#fca5a5">${esc(i)}</li>`).join("")}</ul>`:""}
+        <div class="mini" style="margin-top:10px">⚠️ اجرای واقعی نیازمند تأیید انسانی است</div>
+      </div>`;
+  }
 })();
 
 /* ═══════════ [V6] مهارت‌ها و پلاگین — قابل توسعه ═══════════ */
