@@ -3,3 +3,4 @@ python-dotenv
 openrouter
 jsonschema
 pytest
+pypdf

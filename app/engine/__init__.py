@@ -13,6 +13,7 @@ from .normalize_fa import normalize
 from .claims import extract_keywords, detect_needs, reference_docs
 from .ledger import ledger_entry, claim_dict
 from .dossier import build_dossier, run_simulation
+from .ocr import extract_text_layer, search_pages, try_ocr_page, dependencies as ocr_dependencies
 
 __all__ = [
     "normalize",
@@ -23,4 +24,8 @@ __all__ = [
     "claim_dict",
     "build_dossier",
     "run_simulation",
+    "extract_text_layer",
+    "search_pages",
+    "try_ocr_page",
+    "ocr_dependencies",
 ]
