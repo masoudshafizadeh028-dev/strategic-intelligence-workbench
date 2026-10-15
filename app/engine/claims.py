@@ -56,9 +56,11 @@ def detect_needs(text: str) -> list:
     return [k for k, words in NEED_WORDS.items() if any(w in norm for w in words)]
 
 
-def reference_docs(text: str, top_n: int = 3) -> list:
+def reference_docs(text: str, top_n: int = 3, user_refs: tuple = ()) -> list:
     """ارجاع به اسناد: امتیاز هر سند = تعداد مفاهیم/تم‌های مشترک با متن.
 
+    user_refs: ارجاع‌های آماده از مخزن محلی (seed + کاربر) با همان شکل خروجی؛
+    ادغام و مرتب‌سازی مشترک انجام می‌شود.
     برمی‌گرداند: [{doc_id, title, score, matched}] — score خام و قابل‌ممیزی.
     """
     norm = normalize(text)
@@ -81,5 +83,11 @@ def reference_docs(text: str, top_n: int = 3) -> list:
                     "matched": sorted(matched),
                 }
             )
-    results.sort(key=lambda x: (-x["score"], x["doc_id"]))
-    return results[:top_n]
+    seen = set()
+    merged = []
+    for r in list(user_refs) + results:
+        if r["doc_id"] not in seen:
+            seen.add(r["doc_id"])
+            merged.append(r)
+    merged.sort(key=lambda x: (-x["score"], x["doc_id"]))
+    return merged[:top_n]

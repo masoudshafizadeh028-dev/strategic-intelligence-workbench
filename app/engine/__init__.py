@@ -14,6 +14,9 @@ from .claims import extract_keywords, detect_needs, reference_docs
 from .ledger import ledger_entry, claim_dict
 from .dossier import build_dossier, run_simulation
 from .ocr import extract_text_layer, search_pages, try_ocr_page, dependencies as ocr_dependencies
+from .store import WorkbenchStore
+from .websearch import deep_search, search_once, WebSearchError
+from .agent import run_agent, run_skill, match_skills, audit_dossier, build_skill_prompt
 
 __all__ = [
     "normalize",
@@ -28,4 +31,13 @@ __all__ = [
     "search_pages",
     "try_ocr_page",
     "ocr_dependencies",
+    "WorkbenchStore",
+    "deep_search",
+    "search_once",
+    "WebSearchError",
+    "run_agent",
+    "run_skill",
+    "match_skills",
+    "audit_dossier",
+    "build_skill_prompt",
 ]

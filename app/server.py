@@ -33,8 +33,25 @@ MAX_TEXT_CHARS = 20000
 
 try:
     from engine.dossier import build_dossier
+    from engine.store import WorkbenchStore
+    from engine.agent import run_agent
+    from engine.websearch import WebSearchError, deep_search
+    from engine.ocr import OcrError, extract_text_layer
 except ImportError:  # اجرا به‌صورت python -m app.server از ریشه ریپو
     from app.engine.dossier import build_dossier  # noqa
+    from app.engine.store import WorkbenchStore  # noqa
+    from app.engine.agent import run_agent  # noqa
+    from app.engine.websearch import WebSearchError, deep_search  # noqa
+    from app.engine.ocr import OcrError, extract_text_layer  # noqa
+
+_STORE = None
+
+
+def store() -> WorkbenchStore:
+    global _STORE
+    if _STORE is None:
+        _STORE = WorkbenchStore()
+    return _STORE
 
 BRIDGE_HTML = """
 <div id="ai-fab" style="position:fixed;bottom:18px;left:18px;z-index:99999;">
@@ -173,6 +190,8 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/health" or path == "/api/v1/health":
             self._send(200, {"ok": True, "model": DEFAULT_MODEL,
                              "api": API_VERSION, "offline": True})
+        elif path == "/api/v1/skills":
+            self._send(200, {"skills": store().list_skills()})
         else:
             self._send(404, {"error": "not found"})
 
@@ -191,6 +210,25 @@ class Handler(BaseHTTPRequestHandler):
             self._chat()
         elif path == "/api/v1/dossier":
             self._dossier()
+        elif path == "/api/v1/ingest":
+            self._ingest()
+        elif path == "/api/v1/skills":
+            self._skills_create()
+        elif path == "/api/v1/agent":
+            self._agent()
+        elif path == "/api/v1/websearch":
+            self._websearch()
+        else:
+            self._send(404, {"error": "not found"})
+
+    def do_DELETE(self):
+        path = urllib.parse.urlparse(self.path).path
+        if path.startswith("/api/v1/skills/"):
+            skill_id = urllib.parse.unquote(path.rsplit("/", 1)[-1])
+            if store().remove_skill(skill_id):
+                self._send(200, {"removed": skill_id})
+            else:
+                self._send(404, {"error": "skill not found"})
         else:
             self._send(404, {"error": "not found"})
 
@@ -258,6 +296,138 @@ class Handler(BaseHTTPRequestHandler):
             self._send(500, {"error": str(exc)})
             return
         self._send(200, dossier)
+
+    def _ingest(self):
+        """افزودن فایل/متن به موتور — POST /api/v1/ingest.
+
+        ورودی: {title: str, text?: str, pdf_base64?: str, source?: str,
+                themes?: [str], summary?: str}
+        خروجی: {doc_id} — سند در SQLite محلی ذخیره و در ارجاع‌ها لحاظ می‌شود.
+        """
+        import base64
+        import tempfile
+        data = self._read_json()
+        if not isinstance(data, dict):
+            self._send(400, {"error": "JSON object required"})
+            return
+        if data.get("__too_large__"):
+            self._send(413, {"error": "request too large"})
+            return
+        title = data.get("title", "")
+        if not isinstance(title, str) or not title.strip():
+            self._send(400, {"error": "title required"})
+            return
+        text = data.get("text", "") or ""
+        if data.get("pdf_base64"):
+            try:
+                raw = base64.b64decode(data["pdf_base64"], validate=True)
+            except Exception:
+                self._send(400, {"error": "invalid pdf_base64"})
+                return
+            with tempfile.NamedTemporaryFile(prefix="wb_ingest_", suffix=".pdf",
+                                            delete=False) as tmp:
+                tmp.write(raw)
+            try:
+                ext = extract_text_layer(tmp.name)
+            except OcrError as e:
+                self._send(400, {"error": f"PDF: {e}"})
+                return
+            finally:
+                Path(tmp.name).unlink(missing_ok=True)
+            text = "\n".join(p["text"] for p in ext["pages_detail"] if p["text"])
+            if not text.strip():
+                self._send(400, {"error": "PDF بدون متن قابل استخراج است (اسکن‌شده؟)"})
+                return
+        if not isinstance(text, str) or not text.strip():
+            self._send(400, {"error": "text or pdf_base64 required"})
+            return
+        if len(text) > MAX_TEXT_CHARS:
+            self._send(400, {"error": f"text too long (max {MAX_TEXT_CHARS} chars)"})
+            return
+        from engine.claims import extract_keywords
+        kws = [k["term"] for k in extract_keywords(text)[:8]]
+        doc_id = store().add_document(
+            title=title.strip()[:200], text=text,
+            summary=(data.get("summary") or "")[:500],
+            themes=data.get("themes") or [], concepts=kws,
+            source=data.get("source") or "api-ingest")
+        self._send(200, {"doc_id": doc_id, "concepts": kws})
+
+    def _skills_create(self):
+        """ساخت مهارت — POST /api/v1/skills."""
+        data = self._read_json()
+        if not isinstance(data, dict) or data.get("__too_large__"):
+            self._send(400, {"error": "invalid JSON"})
+            return
+        name = data.get("name", "")
+        if not isinstance(name, str) or not name.strip():
+            self._send(400, {"error": "name required"})
+            return
+        skill_id = store().add_skill(
+            name=name.strip()[:80], category=data.get("category") or "user",
+            trigger=data.get("trigger") or "", objective=data.get("objective") or "",
+            steps=data.get("steps") or [], tools=data.get("tools") or [])
+        self._send(200, {"skill_id": skill_id})
+
+    def _agent(self):
+        """اجرای ایجنت — POST /api/v1/agent.
+
+        ورودی: {request: str, allow_web?: bool, max_steps?: int,
+                feedback?: str, doc_id?: str}
+        allow_web پیش‌فرض False (آفلاین-first؛ فعال‌سازی صریح = opt-in).
+        """
+        data = self._read_json()
+        if not isinstance(data, dict) or data.get("__too_large__"):
+            self._send(400, {"error": "invalid JSON"})
+            return
+        request = data.get("request", "")
+        if not isinstance(request, str) or not request.strip():
+            self._send(400, {"error": "request required"})
+            return
+        if len(request) > MAX_TEXT_CHARS:
+            self._send(400, {"error": "request too long"})
+            return
+        try:
+            out = run_agent(
+                request, store=store(),
+                allow_web=bool(data.get("allow_web", False)),
+                max_steps=int(data.get("max_steps", 6) or 6),
+                feedback=data.get("feedback") or "",
+                doc_id=data.get("doc_id"))
+        except ValueError as exc:
+            self._send(400, {"error": str(exc)})
+            return
+        except Exception as exc:  # noqa: BLE001
+            self._send(500, {"error": str(exc)})
+            return
+        self._send(200, out)
+
+    def _websearch(self):
+        """جست‌وجوی عمیق وب — POST /api/v1/websearch (صریح و opt-in)."""
+        data = self._read_json()
+        if not isinstance(data, dict) or data.get("__too_large__"):
+            self._send(400, {"error": "invalid JSON"})
+            return
+        query = data.get("query", "")
+        if not isinstance(query, str) or len(query.strip()) < 2:
+            self._send(400, {"error": "query required (min 2 chars)"})
+            return
+        try:
+            max_results = min(int(data.get("max_results", 3) or 3), 5)
+        except (TypeError, ValueError):
+            self._send(400, {"error": "invalid max_results"})
+            return
+        try:
+            from engine.claims import extract_keywords
+            out = deep_search(query, keywords=extract_keywords(query),
+                              max_results=max_results)
+        except WebSearchError as exc:
+            self._send(402, {"error": str(exc)})
+            return
+        except Exception as exc:  # noqa: BLE001
+            self._send(500, {"error": str(exc)})
+            return
+        self._send(200, out)
 
     def log_message(self, *args):
         pass

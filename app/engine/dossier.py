@@ -55,14 +55,15 @@ def run_simulation(short_inputs: dict = None) -> dict:
     }
 
 
-def build_dossier(request: str, doc_id: str = None, sim_inputs: dict = None) -> dict:
+def build_dossier(request: str, doc_id: str = None, sim_inputs: dict = None,
+                  store_refs: list = None, keyword_top_n: int = 5) -> dict:
     """پرونده کامل از یک درخواست فارسی."""
     text = normalize(request or "")
     if not text:
         raise ValueError("درخواست خالی است")
     needs = detect_needs(text)
     keywords = extract_keywords(text)
-    refs = reference_docs(text)
+    refs = reference_docs(text, user_refs=tuple(store_refs or ()))
 
     db = get_db()
     doc = None
@@ -74,7 +75,7 @@ def build_dossier(request: str, doc_id: str = None, sim_inputs: dict = None) -> 
         doc = db.get_document(refs[0]["doc_id"])
 
     claims = []
-    for i, kw in enumerate(keywords[:5], 1):
+    for i, kw in enumerate(keywords[:keyword_top_n], 1):
         dockw = [r for r in refs if kw["term"] in r["matched"]]
         if dockw:
             d = dockw[0]
