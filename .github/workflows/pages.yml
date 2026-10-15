@@ -1,6 +1,8 @@
 name: Pages
 
-# انتشار داشبورد ایستا (کاملاً آفلاین؛ قابلیت‌های سرور با fallback محلی)
+# بسته ایستای داشبورد (کاملاً آفلاین) به‌صورت artifact قابل دانلود.
+# استقرار خودکار Pages نیازمند پلن پولی برای ریپوی خصوصی است؛
+# در صورت عمومی‌شدن ریپو، job deploy را برگردانید.
 on:
   push:
     branches: [main]
@@ -11,12 +13,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
 
 jobs:
   build:
@@ -28,15 +24,8 @@ jobs:
           mkdir -p _site
           cp app/doctrine.html _site/index.html
           printf 'User-agent: *\nDisallow:\n' > _site/robots.txt
-      - uses: actions/upload-pages-artifact@v3
+          test -s _site/index.html
+      - uses: actions/upload-artifact@v4
         with:
+          name: doctrine-dashboard
           path: _site
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4

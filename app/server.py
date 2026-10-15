@@ -13,13 +13,22 @@ from openai import OpenAI
 OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY")
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 
-CLIENT = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_KEY,
-) if OPENROUTER_KEY else OpenAI(
-    base_url="https://router.huggingface.co/v1",
-    api_key=HF_TOKEN,
-)
+_CLIENT = None
+
+
+def llm_client():
+    """ساخت تنبل کلاینت LLM — import بدون کلید نباید شکست بخورد (آفلاین-first)."""
+    global _CLIENT
+    if _CLIENT is None:
+        if OPENROUTER_KEY:
+            _CLIENT = OpenAI(base_url="https://openrouter.ai/api/v1",
+                             api_key=OPENROUTER_KEY)
+        elif HF_TOKEN:
+            _CLIENT = OpenAI(base_url="https://router.huggingface.co/v1",
+                             api_key=HF_TOKEN)
+        else:
+            raise RuntimeError("هیچ کلید LLM تنظیم نشده (OPENROUTER_API_KEY یا HF_TOKEN)")
+    return _CLIENT
 
 DEFAULT_MODEL = os.environ.get(
     "CHAT_MODEL",
@@ -249,12 +258,14 @@ class Handler(BaseHTTPRequestHandler):
             self._send(400, {"error": "invalid model"})
             return
         try:
-            completion = CLIENT.chat.completions.create(
+            completion = llm_client().chat.completions.create(
                 model=model,
                 messages=messages,
             )
             content = completion.choices[0].message.content or ""
             self._send(200, {"reply": content, "model": model})
+        except RuntimeError as exc:
+            self._send(503, {"error": str(exc)})
         except Exception as exc:  # noqa: BLE001
             self._send(500, {"error": str(exc)})
 
