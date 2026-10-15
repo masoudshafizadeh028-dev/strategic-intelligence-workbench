@@ -17,6 +17,7 @@ from .ocr import extract_text_layer, search_pages, try_ocr_page, dependencies as
 from .store import WorkbenchStore
 from .websearch import deep_search, search_once, WebSearchError
 from .agent import run_agent, run_skill, match_skills, audit_dossier, build_skill_prompt
+from .osint import collect as osint_collect, OsintError, CONNECTORS as OSINT_CONNECTORS
 
 __all__ = [
     "normalize",
@@ -40,4 +41,7 @@ __all__ = [
     "match_skills",
     "audit_dossier",
     "build_skill_prompt",
+    "osint_collect",
+    "OsintError",
+    "OSINT_CONNECTORS",
 ]

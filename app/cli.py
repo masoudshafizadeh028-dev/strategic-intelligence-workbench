@@ -198,6 +198,18 @@ def cmd_websearch(args) -> int:
     return 0
 
 
+def cmd_osint(args) -> int:
+    from engine.osint import OsintError, collect
+    try:
+        out = collect(args.target,
+                      tuple(c.strip() for c in args.connectors.split(",") if c.strip()))
+    except OsintError as e:
+        print(f"خطا: {e}", file=sys.stderr)
+        return 2
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_ocr(args) -> int:
     from engine.ocr import OcrError, extract_text_layer, search_pages
     try:
@@ -271,6 +283,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("query")
     p.add_argument("--max-results", type=int, default=3)
     p.set_defaults(func=cmd_websearch)
+
+    p = sub.add_parser("osint", help="OSINT محدود و مجاز (دامنه/گیت‌هاب)")
+    p.add_argument("target")
+    p.add_argument("--connectors", default="dns,github")
+    p.set_defaults(func=cmd_osint)
     return ap
 
 

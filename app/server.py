@@ -227,6 +227,8 @@ class Handler(BaseHTTPRequestHandler):
             self._agent()
         elif path == "/api/v1/websearch":
             self._websearch()
+        elif path == "/api/v1/osint":
+            self._osint()
         else:
             self._send(404, {"error": "not found"})
 
@@ -434,6 +436,36 @@ class Handler(BaseHTTPRequestHandler):
                               max_results=max_results)
         except WebSearchError as exc:
             self._send(402, {"error": str(exc)})
+            return
+        except Exception as exc:  # noqa: BLE001
+            self._send(500, {"error": str(exc)})
+            return
+        self._send(200, out)
+
+    def _osint(self):
+        """OSINT محدود و مجاز — POST /api/v1/osint.
+
+        ورودی: {target: str (دامنه یا نام‌کاربری گیت‌هاب),
+                connectors?: ["dns","github"]}
+        ایمیل/تلفن/هویت حقیقی، دارک‌وب و HIBP پشتیبانی نمی‌شوند (400).
+        """
+        data = self._read_json()
+        if not isinstance(data, dict) or data.get("__too_large__"):
+            self._send(400, {"error": "invalid JSON"})
+            return
+        target = data.get("target", "")
+        if not isinstance(target, str):
+            self._send(400, {"error": "invalid target"})
+            return
+        connectors = data.get("connectors") or ["dns", "github"]
+        if not isinstance(connectors, list):
+            self._send(400, {"error": "invalid connectors"})
+            return
+        try:
+            from engine.osint import OsintError as _OE, collect as _collect
+            out = _collect(target, tuple(c for c in connectors if isinstance(c, str)))
+        except _OE as exc:
+            self._send(400, {"error": str(exc)})
             return
         except Exception as exc:  # noqa: BLE001
             self._send(500, {"error": str(exc)})
