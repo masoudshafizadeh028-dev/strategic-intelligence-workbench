@@ -27,6 +27,15 @@ DEFAULT_MODEL = os.environ.get(
 )
 ROOT = Path(__file__).resolve().parent
 
+API_VERSION = "v1"
+MAX_JSON_BYTES = 256 * 1024
+MAX_TEXT_CHARS = 20000
+
+try:
+    from engine.dossier import build_dossier
+except ImportError:  # اجرا به‌صورت python -m app.server از ریشه ریپو
+    from app.engine.dossier import build_dossier  # noqa
+
 BRIDGE_HTML = """
 <div id="ai-fab" style="position:fixed;bottom:18px;left:18px;z-index:99999;">
 <button id="ai-fab-btn" style="width:56px;height:56px;border-radius:50%;border:1px solid #00ffcc;background:#13131f;color:#00ffcc;font-size:24px;cursor:pointer;box-shadow:0 0 18px rgba(0,255,204,.35)">&#128172;</button>
@@ -95,24 +104,43 @@ else{status.textContent='خروجی متنی در صفحه پیدا نشد';}
 
 
 class Handler(BaseHTTPRequestHandler):
+    server_version = "Workbench/1.0"
+
+    def _cors_headers(self):
+        # CORS محدود: فقط مبدأهای loopback
+        origin = self.headers.get("Origin", "")
+        try:
+            host = urllib.parse.urlparse(origin).hostname or ""
+        except ValueError:
+            host = ""
+        if host in ("localhost", "127.0.0.1", "::1"):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+
     def _send(self, code, body, content_type="application/json"):
         if isinstance(body, (dict, list)):
-            body = json.dumps(body).encode("utf-8")
+            body = json.dumps(body, ensure_ascii=False).encode("utf-8")
         elif isinstance(body, str):
             body = body.encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        self._cors_headers()
         self.end_headers()
         self.wfile.write(body)
 
     def _read_json(self):
-        length = int(self.headers.get("Content-Length", 0))
-        if not length:
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+        except ValueError:
             return {}
+        if length <= 0:
+            return {}
+        if length > MAX_JSON_BYTES:
+            return {"__too_large__": True}
         try:
             return json.loads(self.rfile.read(length))
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, ValueError):
             return {}
 
     def _serve_html(self, filename):
@@ -142,15 +170,27 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_html("index.html")
         elif path == "/doctrine":
             self._serve_doctrine()
-        elif path == "/health":
-            self._send(200, {"ok": True, "model": DEFAULT_MODEL})
+        elif path == "/health" or path == "/api/v1/health":
+            self._send(200, {"ok": True, "model": DEFAULT_MODEL,
+                             "api": API_VERSION, "offline": True})
         else:
             self._send(404, {"error": "not found"})
+
+    def do_OPTIONS(self):
+        # پیش‌پرواز CORS فقط برای مبدأهای loopback
+        self.send_response(204)
+        self._cors_headers()
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
     def do_POST(self):
         path = urllib.parse.urlparse(self.path).path
         if path == "/api/chat":
             self._chat()
+        elif path == "/api/v1/dossier":
+            self._dossier()
         else:
             self._send(404, {"error": "not found"})
 
@@ -158,6 +198,9 @@ class Handler(BaseHTTPRequestHandler):
         data = self._read_json()
         if not isinstance(data, dict):
             self._send(400, {"error": "JSON object required"})
+            return
+        if data.get("__too_large__"):
+            self._send(413, {"error": "request too large"})
             return
         messages = data.get("messages") or []
         model = data.get("model") or DEFAULT_MODEL
@@ -176,6 +219,45 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, {"reply": content, "model": model})
         except Exception as exc:  # noqa: BLE001
             self._send(500, {"error": str(exc)})
+
+    def _dossier(self):
+        """ساخت پرونده آفلاین — POST /api/v1/dossier.
+
+        ورودی: {request: str, doc_id?: str, sim_inputs?: {k: float}}
+        خروجی: پرونده JSON مطابق dossier.schema.v1.json
+        """
+        data = self._read_json()
+        if not isinstance(data, dict):
+            self._send(400, {"error": "JSON object required"})
+            return
+        if data.get("__too_large__"):
+            self._send(413, {"error": "request too large"})
+            return
+        request = data.get("request", "")
+        doc_id = data.get("doc_id")
+        sim_inputs = data.get("sim_inputs") or {}
+        if not isinstance(request, str) or not request.strip():
+            self._send(400, {"error": "request required"})
+            return
+        if len(request) > MAX_TEXT_CHARS:
+            self._send(400, {"error": f"request too long (max {MAX_TEXT_CHARS} chars)"})
+            return
+        if doc_id is not None and not isinstance(doc_id, str):
+            self._send(400, {"error": "invalid doc_id"})
+            return
+        if not isinstance(sim_inputs, dict):
+            self._send(400, {"error": "invalid sim_inputs"})
+            return
+        try:
+            dossier = build_dossier(request, doc_id=doc_id or None,
+                                    sim_inputs=sim_inputs)
+        except ValueError as exc:
+            self._send(400, {"error": str(exc)})
+            return
+        except Exception as exc:  # noqa: BLE001
+            self._send(500, {"error": str(exc)})
+            return
+        self._send(200, dossier)
 
     def log_message(self, *args):
         pass
